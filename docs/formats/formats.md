@@ -12,7 +12,7 @@ The blocks will have a header with the following content:
 Byte Position | Content
 --------------|---------
 0 | Type of data 
-1 | Reserved
+1 | Position of data point
 2 | Reserved
 3 | Reserved
 4 | Internal time tick
@@ -28,9 +28,18 @@ At the current point there are 2 different types of data. They are defined as fo
 
 Code | Type
 -----|-----
-0x01 | Fork mm data
-0x02 | Rear Shock mm data
-0x03 | GPS data
+0x01 | Travel in mm
+0x02 | GPS data
+
+### Position of data Point
+
+This Byte can be used to determine the position of the sensor on the bike. Currently these are implemented/available:
+
+Code | Position
+-----|---------
+0x01 | Fork travel
+0x02 | Damper travel
+
 
 ## Data format
 
