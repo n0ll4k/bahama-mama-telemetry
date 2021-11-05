@@ -1,0 +1,55 @@
+@startuml Bahama Mama Telemetry Classes
+
+class   SystemManager
+class   DataCollector
+class   AnalogMeasurement
+class   GpsMeasurement
+class   DataSave
+interface   I_CB_AnalogMeasurement
+interface   I_ConfigAnalogMeasurement
+interface   I_AnalogMeasurement
+interface   I_CB_GpsMeasurement
+interface   I_ConfigGpsMeasurement
+interface   I_GpsMeasurement
+interface   I_ConfigDataSave
+interface   I_DataSave
+interface   ESP32_ADC_Interface
+interface   ESP32_UART_Interface
+interface   ESP32_SD_Card_Interface
+interface   I_ConfigDataCollector
+interface   I_DataCollector
+
+
+ I_CB_AnalogMeasurement <|.. AnalogMeasurement
+ I_ConfigAnalogMeasurement <|.. AnalogMeasurement
+ I_AnalogMeasurement <|.. AnalogMeasurement
+
+ AnalogMeasurement <|-- ESP32_ADC_Interface
+
+ I_CB_GpsMeasurement <|.. GpsMeasurement
+ I_ConfigGpsMeasurement <|.. GpsMeasurement
+ I_GpsMeasurement <|.. GpsMeasurement
+
+ GpsMeasurement <|-- ESP32_UART_Interface
+
+ I_ConfigDataSave <|.. DataSave
+ I_DataSave <|.. DataSave
+
+ DataSave <|-- ESP32_SD_Card_Interface
+ 
+ I_ConfigDataCollector <|.. DataCollector
+ I_DataCollector <|.. DataCollector
+  
+ DataCollector --|> I_CB_AnalogMeasurement
+ DataCollector --|> I_AnalogMeasurement
+ DataCollector --|> I_CB_GpsMeasurement
+ DataCollector --|> I_GpsMeasurement
+ DataCollector --|> I_ConfigDataSave
+ DataCollector --|> I_DataSave
+
+ SystemManager -|> I_ConfigGpsMeasurement
+ SystemManager -|> I_ConfigAnalogMeasurement
+ SystemManager -|> I_ConfigDataCollector
+ SystemManager -|> I_DataCollector
+
+@enduml
