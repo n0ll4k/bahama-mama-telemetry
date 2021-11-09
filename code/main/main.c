@@ -65,7 +65,8 @@ void app_main(void)
         adc1_config_width(width);
         adc1_config_channel_atten(channel, atten);
     } else {
-        print( "Only use of ADC1 is permitted.|n")
+        printf( "Only use of ADC1 is permitted.\n");
+        printf("test");
         exit(1);
     }
 
