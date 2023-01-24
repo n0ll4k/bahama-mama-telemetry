@@ -24,3 +24,7 @@ Goals/Requirements analysis software.
 # Hardware
 
 As a base for the first development a Raspberry Pi Pico W will be used. As the processor board is fairly cheap and can easily be obtained it is a good base for this project. In addition it has a dual core processor which means acquistion of data and storing of data can be easily split to both cores with a small queue in between.
+
+The schematic of the first iteration is shown below.
+
+![BMT_Schematic](docs/img/bmt_sch.png)
