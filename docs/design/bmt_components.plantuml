@@ -1,49 +1,31 @@
 @startuml Bahama Mama Telemetry Components
 
-() "ADC Interface" as adc_if
-() "GPS Interface" as gps_if
-() "Button Interface" as btn_if
-() "SD Card Interface" as sd_if
+[Data Collector] as collector
+[Data Composer] as composer
+[FIFO] as fifo
+[SD Interface] as sd
+[ADC Reader] as adc
+[GPS Reader] as gps
 
-[adc] as "ADC Module"
-[gps] as "GPS Module"
-[sd] as "SD Card"
-[btn] as "Button Module"
-
-[data_collection] as "Data Collector"
-[app_logic] as "Application logic"
-
-
-adc_if <-- [adc]
-gps_if <-- [gps]
-sd_if -> [sd]
-
-[data_collection] --> adc_if
-[data_collection] --> gps_if
-[data_collection] -> sd_if
-
-
-[app_logic] --> [data_collection]
-btn_if <- [app_logic]
-
-btn_if <-- [btn]
-
-note bottom of [adc]
-    ADC Module will be used to
-    read two linear potentiometers.
+note top of fifo
+    Use multicore FIFO
+    from Pico SDK.
 end note
 
-note bottom of [gps]
-    GPS Module is used to get data
-    via serial interface from a GPS
-    module.
+note top of collector
+    Run on Core 0.
 end note
 
-note bottom of [data_collection]
-    Data collector starts read of data
-    and gathers data from ADC and GPS.
-    Is responsible for translation of adc
-    values to mm.
+note top of composer
+    Run on Core 1.
 end note
+
+collector -> fifo
+fifo -> composer
+
+collector -d-> adc
+collector -d-> gps
+
+composer -d-> sd
 
 @enduml
