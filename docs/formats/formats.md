@@ -1,6 +1,11 @@
 # File Format
 
 
+## TODO REDEFINE THIS!
+
+
+
+
 There will be one file for each data recording started. The files will be named after the internal time tick they were started at. A normalized datetime format will be available through the GPS data inside the file. Files won't be human readable as hex/ascii data will be saved to gain a bit of speed.
 
 Current plan is to write blocks of data in case the buffers are at the edge of an overflow or in specific time slots.
