@@ -8,7 +8,7 @@
 [GPS Reader] as gps
 
 note top of fifo
-    Use multicore FIFO
+    Use queue implementation
     from Pico SDK.
 end note
 
