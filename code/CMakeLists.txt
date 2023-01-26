@@ -13,8 +13,10 @@ add_executable(bmt
     main.c
 )
 target_link_libraries(bmt
-        pico_stdlib              # for core functionality
-        pico_cyw43_arch_none     # we need Wifi to access the GPIO, but we don't need anything else
+        pico_stdlib             # for core functionality
+        pico_cyw43_arch_none    # we need Wifi to access the GPIO, but we don't need anything else
+        hardware_adc            # ADC to read potentiometers 
+        hardware_dma            # DMA to transfer data.
     )
 pico_enable_stdio_usb(bmt 1)
 pico_enable_stdio_uart(bmt 0)
