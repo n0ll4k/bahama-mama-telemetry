@@ -12,8 +12,14 @@
 #include "hardware/dma.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
+#include "f_util.h"
+#include "ff.h"
+#include "rtc.h"
+#include "hw_config.h"
 
 #include "gps_coll/gps_fifo.h"
+
+
 
 
 
@@ -52,15 +58,26 @@ void adc_init_hw( void );
 int dma_init_adc_channels( void );
 void uart_init_hw( void );
 void on_uart_rx( void );
-
+sd_card_t * sd_if_init( void );
+void sd_if_deinit( sd_card_t * sd_card );
 
 int main() {
     int idx = 0;
     unsigned int timestamp = 0;
+    sd_card_t * storage;
+    FRESULT f_result = FR_OK;
+    FIL f_file;
+
     stdio_init_all();
     
     if (cyw43_arch_init()) {
         printf("WiFi init failed");
+        return -1;
+    }
+
+    storage = sd_if_init();
+    if ( NULL == storage ){
+        printf( "Error initializing SD Card.\n") ;
         return -1;
     }
 
@@ -74,6 +91,24 @@ int main() {
     }
 
     uart_init_hw();
+
+    const char* const filename = "bmt_test.log";
+    f_result = f_open( &f_file, filename, FA_OPEN_APPEND | FA_WRITE );
+    if ( FR_OK != f_result && FR_EXIST != f_result ) {
+        printf( "f_open(%s) error: %s (%d)\n", filename, FRESULT_str(f_result), f_result );
+    } else {
+        if ( f_printf( &f_file, "BMT says Hello!\n" ) < 0 ) {
+            printf("f_printf failed\n");
+        }
+    }
+
+    f_result = f_close( & f_file );
+    if ( FR_OK != f_result ) {
+        printf( "f_close error: %s (%d)\n", FRESULT_str(f_result), f_result );
+    }
+
+    sd_if_deinit( storage );
+    
 
     /* Start ADC/DMA transfer. */
     dma_start_channel_mask((1u << adc_sample_chan)) ;
@@ -215,4 +250,24 @@ void on_uart_rx() {
         
         gps_fifo_push( ch );
     }
+}
+
+sd_card_t * sd_if_init( void )
+{
+    time_init();
+
+    sd_card_t * sd_card = sd_get_by_num(0);
+    FRESULT f_result = f_mount( &sd_card->fatfs, sd_card->pcName, 1 );
+
+    if ( FR_OK != f_result ) {
+        printf( "Error mounting: %s (%d)\n", FRESULT_str(f_result), f_result );
+        return NULL;
+    }
+
+    return sd_card;
+}
+
+void sd_if_deinit( sd_card_t * sd_card )
+{
+    f_unmount( sd_card->pcName );
 }
