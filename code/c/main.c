@@ -35,8 +35,6 @@
 #define UART_RX_PIN     9
 
 
-int adc_sample_chan = 0;
-int adc_ctrl_chan = 0;
 uint8_t even_odd_flag = 0;
 uint8_t uart_buf[GPS_SAMPLES];
 uint16_t data_buffer[NUM_SAMPLES];
