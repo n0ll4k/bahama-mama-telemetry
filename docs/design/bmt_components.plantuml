@@ -4,8 +4,8 @@
 [Data Composer] as composer
 [FIFO] as fifo
 [SD Interface] as sd
-[ADC Reader] as adc
-[GPS Reader] as gps
+[ADC Collector] as adc
+[GPS Collector] as gps
 
 note top of fifo
     Use queue implementation

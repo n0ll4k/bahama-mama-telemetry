@@ -15,6 +15,7 @@ add_executable(bmt
     main.c
     hw_config.c
     gps_coll/gps_fifo.c
+    adc_coll/adc_coll.c
 )
 
 
