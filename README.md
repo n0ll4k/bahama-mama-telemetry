@@ -9,7 +9,7 @@ First of all the goals or requirements of the system:
 2. The system shall read the current GPS position.
 3. The system should measure acceleration.
 4. The system should measure gyroscopic movement.
-5. The system should measure break usage.
+5. The system should measure braek usage.
 6. The system should measure the wheel speed.
 7. The system shall save all values to a (micro) sd card.
 8. The system should be able to present the measured values via WiFi.
