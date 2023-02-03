@@ -35,6 +35,8 @@ The single blocks of data are written to the file as they arrive from the measur
 
 Fork and Read Shock data is stored as raw ADC data. Calibration information for every sensor is needed to correctly interpret the travel data.
 
+At the start of the block an internal timestamp will be stored. After that the fork and shock data is stored.
+
 Within a travel information block the first 16 bit are the fork travel data and the following 16-Bit are the shoch travel data. This means there will always be 32 bit blocks containing on set of travel information for fork and shock.
 
 ### GPS Data
