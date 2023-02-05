@@ -23,7 +23,7 @@ Identifier  | Data Content
 t           | travel information (Fork & Shock)
 g           | GPS Data
 a           | Acceleration (Gyroscope & Accelerometer)
-b           | Break Usage
+b           | Brake Usage
 s           | Speed (Wheel Speed)
 
 
