@@ -30,6 +30,7 @@ target_link_libraries(bmt
         hardware_dma            # DMA to transfer data.
         hardware_uart           # GPS Data
         FatFs_SPI               # SD Card
+        pico_multicore
     )
 pico_enable_stdio_usb(bmt 1)
 pico_enable_stdio_uart(bmt 0)
