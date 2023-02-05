@@ -3,7 +3,7 @@
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 
-#include "adc_coll.h"
+#include "adc_collector.h"
 
 #define FORK_SENSOR     26
 #define DAMPER_SENSOR   27
@@ -14,57 +14,53 @@
 
 /*--------------------------------------------------------------------------------*/
 bool flag;
+int sample_channel = 0;
+int ctrl_channel = 0;
 int16_t sample_buffer_1[NUM_SAMPLES];
 uint16_t sample_buffer_2[NUM_SAMPLES];
 uint16_t * sample_pt = &sample_buffer_1[0];
 dma_channel_config adc_sample_cfg;
 dma_channel_config adc_ctrl_cfg;
-adc_coll_data_t adc_collector_data = {
-    .sample_channel = 0,
-    .ctrl_channel = 0,
-    .p_data = NULL
-};
-
 
 void adc_init_hw( void );
-int dma_init_adc_channels( adc_coll_data_t * adc_data );
+int dma_init_adc_channels( void );
 
 /*--------------------------------------------------------------------------------*/
 
-adc_coll_data_t * adc_coll_init( void )
+uint16_t * adc_collector_init( void )
 {
     adc_init_hw();
 
     /* Initialize DMA channels for ADC */
-    if ( -1 == dma_init_adc_channels( &adc_collector_data) ) {
+    if ( -1 == dma_init_adc_channels() ) {
         //printf( "Error initializing DMA channels for ADC.\n");
         return NULL;
     }
 
-    return &adc_collector_data;
+    return &sample_buffer_1[0];
 }
 
-void adc_coll_start_adc( void )
+void adc_collector_start_adc( void )
 {
-    dma_start_channel_mask((1u << adc_collector_data.sample_channel));
+    dma_start_channel_mask((1u << sample_channel));
     adc_run(true) ;
 }
 
-void adc_coll_wait_for_new_data( adc_coll_data_t * adc_data )
+void adc_collector_wait_for_new_data( uint16_t * adc_data )
 {
-        dma_channel_wait_for_finish_blocking( adc_data->sample_channel );
+        dma_channel_wait_for_finish_blocking( sample_channel );
 
         if (flag) {
             flag = false;
             sample_pt = &sample_buffer_1[0];
-            adc_data->p_data = &sample_buffer_2[0];
+            adc_data = &sample_buffer_2[0];
         } else {
             flag = true;
             sample_pt = &sample_buffer_2[0];
-            adc_data->p_data = &sample_buffer_1[0];
+            adc_data = &sample_buffer_1[0];
         }
         
-        dma_channel_start( adc_data->ctrl_channel );
+        dma_channel_start( ctrl_channel );
 }
 
 
@@ -97,22 +93,22 @@ void adc_init_hw( void )
     adc_set_clkdiv( 24000 );
 }
 
-int dma_init_adc_channels( adc_coll_data_t * adc_data )
+int dma_init_adc_channels( void )
 {
-    adc_data->sample_channel = dma_claim_unused_channel( false );
-    if ( -1 == adc_data->sample_channel ) {
+    sample_channel = dma_claim_unused_channel( false );
+    if ( -1 == sample_channel ) {
         //printf( "Error grabbing ADC sample dma channel.");
         return -1;
     }
 
-    adc_data->ctrl_channel = dma_claim_unused_channel( false );
-    if ( -1 == adc_data->ctrl_channel ) {
+    ctrl_channel = dma_claim_unused_channel( false );
+    if ( -1 == ctrl_channel ) {
         //printf( "Error grabbing ADC ctrl DMA channel.");
         return -1;
     }
 
-    adc_sample_cfg = dma_channel_get_default_config( adc_data->sample_channel );
-    adc_ctrl_cfg = dma_channel_get_default_config ( adc_data->ctrl_channel );
+    adc_sample_cfg = dma_channel_get_default_config( sample_channel );
+    adc_ctrl_cfg = dma_channel_get_default_config ( ctrl_channel );
 
     /* Configure ADC sample channel */
     channel_config_set_transfer_data_size( &adc_sample_cfg, DMA_SIZE_16 );  /* 16-Bit transfer size. */
@@ -120,7 +116,7 @@ int dma_init_adc_channels( adc_coll_data_t * adc_data )
     channel_config_set_write_increment( &adc_sample_cfg, true );            /* Write to incrementing address. */
     channel_config_set_dreq ( &adc_sample_cfg, DREQ_ADC );                  /* Set pace to ADC pace. */
     dma_channel_configure( 
-        adc_data->sample_channel,   /* Channel to configure */
+        sample_channel,             /* Channel to configure */
         &adc_sample_cfg,            /* Channel config */
         sample_buffer_1,            /* Write address */
         &adc_hw->fifo,              /* Read address */
@@ -132,14 +128,14 @@ int dma_init_adc_channels( adc_coll_data_t * adc_data )
     channel_config_set_transfer_data_size( &adc_ctrl_cfg, DMA_SIZE_32 );    /* 32-Bit transfer size. */
     channel_config_set_read_increment( &adc_ctrl_cfg, false );              /* Read from constant address. */
     channel_config_set_write_increment( &adc_ctrl_cfg, false );             /* Write to constant address. */
-    channel_config_set_chain_to( &adc_ctrl_cfg, adc_data->sample_channel ); /* Chain to ADC channel. */
+    channel_config_set_chain_to( &adc_ctrl_cfg, sample_channel );           /* Chain to ADC channel. */
     dma_channel_configure(
-        adc_data->ctrl_channel,                             /* Channel to configure */
-        &adc_ctrl_cfg,                                      /* Channel config */
-        &dma_hw->ch[adc_data->sample_channel].write_addr,   /* Write address */
-        &sample_pt,                                         /* Read address */
-        1,                                                  /* Number of transfers, we only need one address transfer. */
-        false                                               /* Don't start immediately .*/
+        ctrl_channel,                           /* Channel to configure */
+        &adc_ctrl_cfg,                          /* Channel config */
+        &dma_hw->ch[sample_channel].write_addr, /* Write address */
+        &sample_pt,                             /* Read address */
+        1,                                      /* Number of transfers, we only need one address transfer. */
+        false                                   /* Don't start immediately .*/
     );
 
     return 0;

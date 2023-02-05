@@ -14,9 +14,9 @@
 #include "rtc.h"
 #include "hw_config.h"
 
-#include "adc_coll/adc_coll.h"
-#include "gps_coll/gps_coll.h"
-#include "gps_coll/gps_fifo.h"
+#include "adc_collector/adc_collector.h"
+#include "gps_collector/gps_collector.h"
+#include "gps_collector/gps_fifo.h"
 
 #define GPS_SAMPLES     256
 #define BMT_MAJOR       0
@@ -47,7 +47,7 @@ int main() {
     sd_card_t * storage;
     FRESULT f_result = FR_OK;
     FIL f_file;
-    adc_coll_data_t * adc_data;
+    uint16_t * adc_data;
 
     stdio_init_all();
     
@@ -72,14 +72,14 @@ int main() {
     }
 
     /* Initialize the ADC hardware */
-    adc_data = adc_coll_init();
+    adc_data = adc_collector_init();
     if ( NULL == adc_data ) {
         printf( "Error initializing ADC.\n");
         return -1;
     }
 
     /* Initialize GPS collector */
-    gps_coll_init();
+    gps_collector_init();
 
     const char* const filename = "bmt_test.log";
     f_result = f_open( &f_file, filename, FA_OPEN_APPEND | FA_WRITE );
@@ -100,20 +100,20 @@ int main() {
     
 
     /* Start ADC/DMA transfer. */
-    adc_coll_start_adc();
+    adc_collector_start_adc();
   
     printf( "Welcome to BMT v%d.%d.%d", BMT_MAJOR, BMT_MINOR, BMT_BUGFIX );
     while (true) {
-        adc_coll_wait_for_new_data( adc_data );
+        adc_collector_wait_for_new_data( adc_data );
 
         timestamp = to_ms_since_boot( get_absolute_time() );
         //TODO: Build travel data block.
         printf( "\nTIME: %u\n", timestamp );
         for (idx = 0; idx < NUM_SAMPLES; idx++ ) {
-            data_buffer[idx] = adc_data->p_data[idx];
+            data_buffer[idx] = adc_data[idx];
         }
 
-        gps_idx = gps_coll_grab_data( gps_buf, GPS_SAMPLES );
+        gps_idx = gps_collector_grab_data( gps_buf, GPS_SAMPLES );
         //TODO: Build GPS data block
 
         for( idx = 0; idx < gps_idx; idx++ ) {

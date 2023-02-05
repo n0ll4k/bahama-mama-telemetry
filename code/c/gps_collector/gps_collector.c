@@ -14,7 +14,7 @@
 
 void on_uart_rx( void );
 
-void gps_coll_init( void )
+void gps_collector_init( void )
 {
     uart_init(UART_ID, 9600);
     gpio_set_function( UART_TX_PIN, GPIO_FUNC_UART );
@@ -31,7 +31,7 @@ void gps_coll_init( void )
     uart_set_irq_enables(UART_ID, true, false);
 }
 
-int gps_coll_grab_data( uint8_t * buffer, uint16_t max_length )
+int gps_collector_grab_data( uint8_t * buffer, uint16_t max_length )
 {
     int index = 0;
     while( gps_fifo_level() ) {

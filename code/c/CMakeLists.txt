@@ -14,9 +14,10 @@ pico_sdk_init()
 add_executable(bmt
     main.c
     hw_config.c
-    gps_coll/gps_fifo.c
-    gps_coll/gps_coll.c
-    adc_coll/adc_coll.c
+    gps_collector/gps_fifo.c
+    gps_collector/gps_collector.c
+    adc_collector/adc_collector.c
+    data_collector/data_collector.c
 )
 
 
