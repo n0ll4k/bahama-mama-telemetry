@@ -4,7 +4,7 @@
  * 
  * 2023
  */
-
+#include <stdint.h>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "hardware/gpio.h"
@@ -22,15 +22,23 @@
 #define BMT_MAJOR       0
 #define BMT_MINOR       0
 #define BMT_BUGFIX      1
+#define BUTTON_1        14
+#define BUTTON_2        15
 
 
 uint8_t even_odd_flag = 0;
 uint8_t gps_buf[GPS_SAMPLES];
 uint16_t data_buffer[NUM_SAMPLES];
+static const uint8_t debounce_time = 50;
+static bool buttton_pressed = false;
+static int32_t alarm_id = 0;
+
 
 sd_card_t * sd_if_init( void );
 void sd_if_deinit( sd_card_t * sd_card );
 void toggle_led( void );
+void button_cb( uint gpio_no, uint32_t events );
+int64_t enable_button( alarm_id_t alarm_id, void * user_data );
 
 int main() {
     int idx = 0;
@@ -47,6 +55,15 @@ int main() {
         printf("WiFi init failed");
         return -1;
     }
+    
+    gpio_init(BUTTON_1);
+    gpio_pull_down(BUTTON_1);
+    gpio_init(BUTTON_2);
+    gpio_pull_down(BUTTON_2);
+    
+    gpio_set_irq_enabled_with_callback(BUTTON_1, GPIO_IRQ_LEVEL_HIGH, true, &button_cb);
+    gpio_set_irq_enabled(BUTTON_2, GPIO_IRQ_LEVEL_HIGH, true);
+  
 
     storage = sd_if_init();
     if ( NULL == storage ){
@@ -89,7 +106,7 @@ int main() {
     while (true) {
         adc_coll_wait_for_new_data( adc_data );
 
-        timestamp = time_us_32();
+        timestamp = to_ms_since_boot( get_absolute_time() );
         //TODO: Build travel data block.
         printf( "\nTIME: %u\n", timestamp );
         for (idx = 0; idx < NUM_SAMPLES; idx++ ) {
@@ -110,8 +127,6 @@ int main() {
         toggle_led();             
     }
 }
-
-
 
 
 
@@ -146,5 +161,23 @@ void toggle_led( void )
         led_flag = 1;
     }
 
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_flag);   
+    //cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_flag);   
+}
+
+void button_cb( uint gpio_no, uint32_t events )
+{
+    if ( buttton_pressed ) {
+        cancel_alarm( alarm_id );
+    } else {
+        buttton_pressed = true;
+        printf( "GPIO Button %d pressed.\n", gpio_no );
+    }
+
+    alarm_id = add_alarm_in_ms( debounce_time, enable_button, NULL, false );
+}
+
+int64_t enable_button( alarm_id_t alarm_id, void * user_data )
+{
+    buttton_pressed = false;
+    return 0;
 }

@@ -52,7 +52,7 @@ void adc_coll_start_adc( void )
 
 void adc_coll_wait_for_new_data( adc_coll_data_t * adc_data )
 {
-            dma_channel_wait_for_finish_blocking( adc_data->sample_channel );
+        dma_channel_wait_for_finish_blocking( adc_data->sample_channel );
 
         if (flag) {
             flag = false;
