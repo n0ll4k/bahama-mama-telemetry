@@ -97,6 +97,7 @@ int data_collector_collect_and_push( void )
 
     gps_idx = gps_collector_grab_data( gps_buf, GPS_SAMPLES );
     header.data_type =  GPS_ID;
+    // TODO Fix error with length. should always be. so perhaps something need to be added.
     header.block_length = gps_idx;    /* Length is given in 8-bit. 16-Bit samples + 32-Bit timestamp*/
     if ( data_queue != NULL ) {
         queue_add_blocking(data_queue, (uint32_t*)&header);
