@@ -1,5 +1,4 @@
 import struct
-import binascii
 import bmt_formats as bmt_fmt
 
 class BmtLogReader:
@@ -12,19 +11,23 @@ class BmtLogReader:
             print( "Error reading data file: {}".format(file_path) )
         else:
             return raw_data
+
+
     
     @staticmethod
     def parse_file( file_path ):
         print( "Reading data file: {}".format( file_path) )
         raw_data = BmtLogReader._read_file( file_path )
-        print( raw_data[:4] )
+        start_idx = 0
+        end_idx = 4        
+        data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[start_idx:end_idx])
+        start_idx = end_idx
+        end_idx += data_header[2]
         
-        
-        data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[:4])
-        timestamp = struct.unpack( bmt_fmt.TIMESTAMP, raw_data[4:8])
 
         print( data_header )
-        print( timestamp)
+        BmtLogReader.parse_travel_information( raw_data[start_idx:end_idx] )
+        
         """
         data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[2008:2012])
         timestamp = struct.unpack( bmt_fmt.TIMESTAMP, raw_data[2012:2016])
@@ -32,7 +35,16 @@ class BmtLogReader:
         print( data_header )
         print( timestamp)
         """
-        
+
+    @staticmethod
+    def parse_travel_information( travel_raw_data ):
+        timestamp = struct.unpack( bmt_fmt.TIMESTAMP, travel_raw_data[0:4])
+        print( timestamp )
+        travel_information = struct.unpack( bmt_fmt.TRAVEL_INFORMATION, travel_raw_data[4:8])
+        print( travel_information )
+    
+
+
         
 
 
