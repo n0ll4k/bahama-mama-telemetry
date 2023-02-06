@@ -5,3 +5,7 @@ DATA_HEADER_FMT = '<BBH'
 
 TIMESTAMP = '<L'
 # [0]: uint32   - timestamp
+
+TRAVEL_INFORMATION = '<HH'
+# [0]: uint16   - Fork ADC data
+# [1]: uint16   - Shock ADC data
