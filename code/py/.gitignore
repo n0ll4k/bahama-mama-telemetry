@@ -1,8 +1,10 @@
 # venv directory
 .bmt_eval
 
-# pychache
-__pychache__
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Sample log files
 *.log
