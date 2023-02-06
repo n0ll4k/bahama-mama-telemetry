@@ -86,8 +86,8 @@ int data_collector_collect_and_push( void )
     header.data_type = TRAVEL_ID;
     header.block_length = NUM_SAMPLES*2 + 4;    /* Length is given in 8-bit. 16-Bit samples + 32-Bit timestamp*/
     if ( data_queue != NULL ) {
-        queue_add_blocking(data_queue, (uint32_t*)&header);   /* Add Header to stream. */
-        queue_add_blocking( data_queue, &timestamp);             /* Add timestamp to stream. */
+        queue_add_blocking( data_queue, (uint32_t*)&header);    /* Add Header to stream. */
+        queue_add_blocking( data_queue, &timestamp);            /* Add timestamp to stream. */
         for ( adc_idx = 0; idx < BUFFERSIZE, adc_idx < NUM_SAMPLES; idx++, adc_idx+=2 ) {
             travel_info.fork_data = adc_data[adc_idx];
             travel_info.shock_data = adc_data[adc_idx+1];
