@@ -1,11 +1,12 @@
 import struct
+import binascii
 import bmt_formats as bmt_fmt
 
 class BmtLogReader:
     @staticmethod
     def _read_file( file_path ):
         try:
-            with open(file_path) as file:
+            with open(file_path, "rb") as file:
                 raw_data = file.read()
         except:
             print( "Error reading data file: {}".format(file_path) )
@@ -16,20 +17,21 @@ class BmtLogReader:
     def parse_file( file_path ):
         print( "Reading data file: {}".format( file_path) )
         raw_data = BmtLogReader._read_file( file_path )
-        raw_data = raw_data.encode()
-
+        print( raw_data[:4] )
+        
+        
         data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[:4])
         timestamp = struct.unpack( bmt_fmt.TIMESTAMP, raw_data[4:8])
 
         print( data_header )
         print( timestamp)
-
-        data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[2004:2008])
-        timestamp = struct.unpack( bmt_fmt.TIMESTAMP, raw_data[2008:2012])
+        """
+        data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[2008:2012])
+        timestamp = struct.unpack( bmt_fmt.TIMESTAMP, raw_data[2012:2016])
 
         print( data_header )
         print( timestamp)
-        
+        """
         
         
 
