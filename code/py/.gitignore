@@ -1,2 +1,8 @@
 # venv directory
 .bmt_eval
+
+# pychache
+__pychache__
+
+# Sample log files
+*.log
