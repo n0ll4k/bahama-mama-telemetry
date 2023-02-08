@@ -26,20 +26,28 @@
 #define BMT_MINOR           0
 #define BMT_BUGFIX          1
 
-#define BUTTON_1            14
-#define BUTTON_2            15
+#define BTN_START_STOP      14
+#define BTN_WIFI            15
 #define QUEUE_WORK_LEVEL    24
 
+enum app_state_e {
+    state_init = 0x00,
+    state_idle,
+    state_start,
+    state_meas,
+    state_stop,
+    state_transfer 
+};
 
 queue_t core_queue;
 static const uint8_t debounce_time = 50;
 static bool buttton_pressed = false;
 static int32_t alarm_id = 0;
+enum app_state_e app_state = state_init;
 
 
 sd_card_t * sd_if_init( void );
 void sd_if_deinit( sd_card_t * sd_card );
-
 void init_buttons( void );
 void button_cb( uint gpio_no, uint32_t events );
 int64_t enable_button( alarm_id_t alarm_id, void * user_data );
@@ -66,14 +74,16 @@ void core1_entry()
     } 
 
     while (1) {
-        queue_lvl = queue_get_level(&core_queue);
-        if(  queue_lvl > QUEUE_WORK_LEVEL ) {
-            for ( idx = 0; idx < queue_lvl; idx++ ) {
-                queue_remove_blocking(&core_queue, (data+idx));
-            }
+        if ( app_state != state_idle ) {
+            queue_lvl = queue_get_level(&core_queue);
+            if(  queue_lvl > QUEUE_WORK_LEVEL ) {
+                for ( idx = 0; idx < queue_lvl; idx++ ) {
+                    queue_remove_blocking(&core_queue, (data+idx));
+                }
 
-            f_write( &f_file, data, (sizeof(uint32_t)*queue_lvl), NULL);
-            f_sync( &f_file );
+                f_write( &f_file, data, (sizeof(uint32_t)*queue_lvl), NULL);
+                f_sync( &f_file );
+            }
         }
     }
 
@@ -87,7 +97,7 @@ void core1_entry()
 
 
 int main() {
-    int idx = 0;
+    
  
     stdio_init_all();
     
@@ -114,11 +124,34 @@ int main() {
         return -1;
     }
 
+    app_state = state_idle;
+    printf( "AppState: %d\n", app_state);
     /* Grab data. */
     while (true) {
-        if ( 0 != data_collector_collect_and_push() ) {
-            printf( "Error during data collection.\n");
+        switch( app_state ) {
+            case state_meas:
+                if ( 0 != data_collector_collect_and_push() ) {
+                    printf( "Error during data collection.\n");
+                }
+                printf( "Meas done\n");
+                break;
+            case state_stop:
+                printf( "Stop measurement.\n");
+                data_collector_stop();
+                app_state = state_idle;
+                break;
+            case state_start:
+                printf( "Start measurement.\n");
+                data_collector_start();
+                app_state = state_meas;
+                break;
+            case state_idle:
+            case state_transfer:
+            default:
+                sleep_ms(25);
+                break;
         }
+        
     }
 }
 
@@ -143,26 +176,40 @@ void sd_if_deinit( sd_card_t * sd_card )
     f_unmount( sd_card->pcName );
 }
 
-void toggle_led( void )
-{
-    static uint8_t led_flag = 0;
-
-    if (led_flag) {
-        led_flag = 0;
-    } else {
-        led_flag = 1;
-    }
-
-    //cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_flag);   
-}
-
 void button_cb( uint gpio_no, uint32_t events )
 {
     if ( buttton_pressed ) {
         cancel_alarm( alarm_id );
     } else {
         buttton_pressed = true;
-        printf( "GPIO Button %d pressed.\n", gpio_no );
+        switch( gpio_no ) {
+            case BTN_START_STOP:
+                switch( app_state ) {
+                    case state_idle:
+                        app_state = state_start;
+                        break;
+                    case state_meas:
+                        app_state = state_stop;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case BTN_WIFI:
+                switch( app_state ) {
+                    case state_idle:
+                        app_state = state_transfer;
+                        break;
+                    case state_transfer:
+                        app_state = state_idle;
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+        printf( "GPIO Button %d pressed. AppState: %d\n", gpio_no, app_state );
     }
 
     alarm_id = add_alarm_in_ms( debounce_time, enable_button, NULL, false );
@@ -176,11 +223,11 @@ int64_t enable_button( alarm_id_t alarm_id, void * user_data )
 
 void init_buttons( void )
 {
-    gpio_init(BUTTON_1);
-    gpio_pull_down(BUTTON_1);
-    gpio_init(BUTTON_2);
-    gpio_pull_down(BUTTON_2);
+    gpio_init(BTN_START_STOP);
+    gpio_pull_down(BTN_START_STOP);
+    gpio_init(BTN_WIFI);
+    gpio_pull_down(BTN_WIFI);
     
-    gpio_set_irq_enabled_with_callback(BUTTON_1, GPIO_IRQ_LEVEL_HIGH, true, &button_cb);
-    gpio_set_irq_enabled(BUTTON_2, GPIO_IRQ_LEVEL_HIGH, true);
+    gpio_set_irq_enabled_with_callback(BTN_START_STOP, GPIO_IRQ_LEVEL_HIGH, true, &button_cb);
+    gpio_set_irq_enabled(BTN_WIFI, GPIO_IRQ_LEVEL_HIGH, true);
 }

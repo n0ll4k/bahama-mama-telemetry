@@ -31,6 +31,15 @@ void gps_collector_init( void )
     uart_set_irq_enables(UART_ID, true, false);
 }
 
+void gps_collector_deinit( void )
+{
+    irq_set_enabled(UART1_IRQ, true);
+
+    uart_set_irq_enables(UART_ID, true, false);
+
+    uart_deinit( UART_ID );
+}
+
 int gps_collector_grab_data( uint8_t * buffer, uint16_t max_length )
 {
     int index = 0;

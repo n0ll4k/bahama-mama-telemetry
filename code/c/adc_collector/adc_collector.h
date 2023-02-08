@@ -9,6 +9,7 @@
 
 uint16_t * adc_collector_init( void );
 void adc_collector_start_adc( void );
+void adc_collector_stop_adc( void );
 void adc_collector_wait_for_new_data( uint16_t * adc_data, uint32_t * start_time );
 
 #endif

@@ -42,10 +42,18 @@ uint16_t * adc_collector_init( void )
     return &sample_buffer_1[0];
 }
 
+
+
 void adc_collector_start_adc( void )
 {
-    dma_start_channel_mask((1u << sample_channel));
+    dma_channel_start( ctrl_channel );
     adc_run(true) ;
+}
+
+void adc_collector_stop_adc( void )
+{   
+    dma_channel_wait_for_finish_blocking( sample_channel );
+    adc_run(false);
 }
 
 void adc_collector_wait_for_new_data( uint16_t * adc_data, uint32_t * start_time )

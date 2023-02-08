@@ -52,14 +52,22 @@ int data_collector_init( queue_t * queue )
     if ( NULL == adc_data ) {
         return -1;
     }
+    
+    return 0;
+}
 
-    /* Initialize GPS collector */
+void data_collector_start( void )
+{
     gps_collector_init();
 
-
-    /* Start ADC/DMA transfer. */
     adc_collector_start_adc();
-    return 0;
+}
+
+void data_collector_stop( void )
+{
+    gps_collector_deinit();
+
+    adc_collector_stop_adc();
 }
 
 int data_collector_collect_and_push( void )
