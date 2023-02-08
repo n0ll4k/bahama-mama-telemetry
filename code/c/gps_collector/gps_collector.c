@@ -34,14 +34,16 @@ void gps_collector_init( void )
 int gps_collector_grab_data( uint8_t * buffer, uint16_t max_length )
 {
     int index = 0;
-    while( gps_fifo_level() ) {
-        gps_fifo_pop(&buffer[index]);
-        index++;
-        if ( index > max_length ) {
-            break;            
-        }
+    uint16_t data = gps_fifo_level();
+    if ( data > max_length ) {
+        data = max_length;
     }
-    return index;
+
+    for ( index = 0; index < data; index++ ) {
+        gps_fifo_pop(&buffer[index]);
+    }
+
+    return data;
 }
 
 // RX interrupt handler

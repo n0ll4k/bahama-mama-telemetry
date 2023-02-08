@@ -53,12 +53,12 @@ int data_collector_init( queue_t * queue )
         return -1;
     }
 
-    /* Start ADC/DMA transfer. */
-    adc_collector_start_adc();
-
     /* Initialize GPS collector */
     gps_collector_init();
 
+
+    /* Start ADC/DMA transfer. */
+    adc_collector_start_adc();
     return 0;
 }
 
@@ -66,7 +66,7 @@ int data_collector_collect_and_push( void )
 {   
     int idx = 0;
     int adc_idx = 0;
-    int gps_idx = 0;
+    int gps_bytes = 0;
     int gps_remainder = 0;
     uint32_t temp_var = 0;
     uint32_t timestamp = 0;
@@ -95,49 +95,56 @@ int data_collector_collect_and_push( void )
         }
     }
 
-    gps_idx = gps_collector_grab_data( gps_buf, GPS_SAMPLES );
-    header.data_type =  GPS_ID;
-    // TODO Fix error with length. should always be. so perhaps something need to be added.
-    header.block_length = gps_idx;    /* Length is given in 8-bit. 16-Bit samples + 32-Bit timestamp*/
-    if ( data_queue != NULL ) {
-        queue_add_blocking(data_queue, (uint32_t*)&header);
-        if ( gps_idx > 0 ) {
-            gps_remainder = gps_idx % 4;
-            for ( idx = 0; idx < (gps_idx-gps_remainder); idx+=4 ) {
-                temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
-                temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
-                temp_var |= ((gps_buf[idx+2] << 8) & 0x0000FF00);
-                temp_var |= ((gps_buf[idx+3]) & 0x000000FF);
-                queue_add_blocking(data_queue, &temp_var);
+    gps_bytes = gps_collector_grab_data( gps_buf, GPS_SAMPLES );
+    if ( gps_bytes > 0 ) {
+        header.data_type =  GPS_ID;
+        
+        /* Length is given in 8-bit. GPS length always has to be a multiple of 4.*/
+        gps_remainder = gps_bytes % 4;
+        if ( gps_remainder != 0 ) {
+            header.block_length = ( gps_bytes - gps_remainder ) + 4;
+        } else {
+            header.block_length = ( gps_bytes - gps_remainder );
+        }
+    
+        if ( data_queue != NULL ) {
+            queue_add_blocking(data_queue, (uint32_t*)&header);
+            if ( gps_bytes > 0 ) {
+                for ( idx = 0; idx < (gps_bytes-gps_remainder); idx+=4 ) {
+                    temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
+                    temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
+                    temp_var |= ((gps_buf[idx+2] << 8) & 0x0000FF00);
+                    temp_var |= ((gps_buf[idx+3]) & 0x000000FF);
+                    queue_add_blocking(data_queue, &temp_var);
+                }
+            }
+            switch( gps_remainder ) {
+                case 3:
+                    temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
+                    temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
+                    temp_var |= ((gps_buf[idx+2] << 8) & 0x0000FF00);
+                    temp_var |= ((0x00) & 0x000000FF);
+                    queue_add_blocking(data_queue, &temp_var);
+                    break;
+                case 2:
+                    temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
+                    temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
+                    temp_var |= ((0x00 << 8) & 0x0000FF00);
+                    temp_var |= ((0x00) & 0x000000FF);
+                    queue_add_blocking(data_queue, &temp_var);
+                    break;
+                case 1:
+                    temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
+                    temp_var |= ((0x00 << 16) & 0x00FF0000);
+                    temp_var |= ((0x00 << 8) & 0x0000FF00);
+                    temp_var |= ((0x00) & 0x000000FF);
+                    queue_add_blocking(data_queue, &temp_var);
+                    break;
+                case 0:
+                default:
+                    break;
             }
         }
-        switch( gps_remainder ) {
-            case 3:
-                temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
-                temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
-                temp_var |= ((gps_buf[idx+2] << 8) & 0x0000FF00);
-                temp_var |= ((0x00) & 0x000000FF);
-                queue_add_blocking(data_queue, &temp_var);
-                break;
-            case 2:
-                temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
-                temp_var |= ((gps_buf[idx+1] << 16) & 0x00FF0000);
-                temp_var |= ((0x00 << 8) & 0x0000FF00);
-                temp_var |= ((0x00) & 0x000000FF);
-                queue_add_blocking(data_queue, &temp_var);
-                break;
-            case 1:
-                temp_var  = ((gps_buf[idx] << 24) & 0xFF000000);
-                temp_var |= ((0x00 << 16) & 0x00FF0000);
-                temp_var |= ((0x00 << 8) & 0x0000FF00);
-                temp_var |= ((0x00) & 0x000000FF);
-                queue_add_blocking(data_queue, &temp_var);
-                break;
-            case 0:
-            default:
-                break;
-        }
     }
-        
     return 0;
 }

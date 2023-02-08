@@ -106,12 +106,14 @@ int main() {
 
    multicore_launch_core1(core1_entry);
 
+   sleep_ms(1000);
+
     /* Initialize data collection. */
     if ( 0 != data_collector_init( &core_queue ) ) {
         printf( "Error initializing data collection.\n");
         return -1;
     }
-    
+
     /* Grab data. */
     while (true) {
         if ( 0 != data_collector_collect_and_push() ) {
