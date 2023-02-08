@@ -56,13 +56,10 @@ class BmtLogReader:
 
 
 if __name__ == "__main__":
-    '''
+    
     import argparse
     parser = argparse.ArgumentParser(description="Reads BMT files.")
     parser.add_argument( "-f", "--file", dest="file", action="store", required=True, help="Path to file to be read." )
     args = parser.parse_args()
-    '''
-    #BmtLogReader.parse_file( args.file )
-    path = os.path.abspath(r"/Users/n0ll4k/pico/pico-projects/bahama-mama-telemetry/code/py/bmt_test-5.log")
-    print( path )
-    BmtLogReader.parse_file( path )
+    
+    BmtLogReader.parse_file( args.file )
