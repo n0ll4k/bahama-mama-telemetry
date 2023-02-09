@@ -17,6 +17,7 @@ class BmtLogReader:
     
     @staticmethod
     def parse_file( file_path ):
+        gps_str = ""
         print( "Reading data file: {}".format( file_path) )
         raw_data = BmtLogReader._read_file( file_path )
              
@@ -28,16 +29,20 @@ class BmtLogReader:
                 print( data_header)
                 BmtLogReader.parse_travel_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]] )
             elif ( data_header[bmt_fmt.DATA_HEADER_POS_TYPE] == b'g'):
-                BmtLogReader.parse_gps_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]])
+                print( data_header)
+                gps_str += BmtLogReader.parse_gps_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]])
             else:
                 print( "Unknown Block: {} | Length: {}".format(data_header[bmt_fmt.DATA_HEADER_POS_TYPE], data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]))
             
             raw_data = raw_data[data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]:]
 
+        print( gps_str)
+
 
 
     @staticmethod
     def parse_travel_information( travel_raw_data  ):
+        #TODO: Save data sets (To DB?)
         timestamp = struct.unpack( bmt_fmt.TIMESTAMP_FMT, travel_raw_data[0:struct.calcsize(bmt_fmt.TIMESTAMP_FMT)])
         print( timestamp )
         travel_raw_data = travel_raw_data[struct.calcsize(bmt_fmt.TIMESTAMP_FMT):]
@@ -49,7 +54,10 @@ class BmtLogReader:
 
     @staticmethod
     def parse_gps_information( gps_raw_data ):
-        print( gps_raw_data )
+        #TODO: Grab gps data as data sets ($GPRMC-$GPGLL)
+        #TODO: Extract information per data set.
+        #TODO: Save data set.
+        return gps_raw_data.decode()
     
 
 
