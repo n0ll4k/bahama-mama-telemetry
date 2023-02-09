@@ -21,19 +21,18 @@ class BmtLogReader:
         raw_data = BmtLogReader._read_file( file_path )
              
         
-        print( len(raw_data))
         while( len(raw_data) > 0 ):
             data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[:struct.calcsize(bmt_fmt.DATA_HEADER_FMT)])
             raw_data = raw_data[struct.calcsize(bmt_fmt.DATA_HEADER_FMT):]
-            if ( data_header[0] == b't' ):
-                BmtLogReader.parse_travel_information( raw_data[:data_header[2]] )
-            elif ( data_header[0] == b'g'):
+            if ( data_header[bmt_fmt.DATA_HEADER_POS_TYPE] == b't' ):
                 print( data_header)
+                BmtLogReader.parse_travel_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]] )
+            elif ( data_header[bmt_fmt.DATA_HEADER_POS_TYPE] == b'g'):
+                BmtLogReader.parse_gps_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]])
             else:
-                print( "Unknown Block: {} | Length: {}".format(data_header[0], data_header[2]))
+                print( "Unknown Block: {} | Length: {}".format(data_header[bmt_fmt.DATA_HEADER_POS_TYPE], data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]))
             
-            raw_data = raw_data[data_header[2]:]
-            print( len(raw_data))
+            raw_data = raw_data[data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]:]
 
 
 
@@ -48,6 +47,9 @@ class BmtLogReader:
             travel_raw_data = travel_raw_data[struct.calcsize(bmt_fmt.TRAVEL_INFORMATION_FMT):]
             #print( travel_information )
 
+    @staticmethod
+    def parse_gps_information( gps_raw_data ):
+        print( gps_raw_data )
     
 
 
