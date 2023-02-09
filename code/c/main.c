@@ -11,15 +11,11 @@
 #include "pico/multicore.h"
 #include "hardware/gpio.h"
 
-#include "f_util.h"
-#include "ff.h"
-#include "rtc.h"
-#include "hw_config.h"
-
 #include "data_collector/data_collector.h"
 #include "gps_collector/gps_collector.h"
 #include "gps_collector/gps_fifo.h"
 #include "adc_collector/adc_collector.h"
+#include "sd_if/sd_if.h"
 
 
 #define BMT_MAJOR           0
@@ -33,9 +29,11 @@
 enum app_state_e {
     state_init = 0x00,
     state_idle,
+    state_start_file,
     state_start,
     state_meas,
     state_stop,
+    state_stop_file,
     state_transfer 
 };
 
@@ -45,9 +43,6 @@ static bool buttton_pressed = false;
 static int32_t alarm_id = 0;
 enum app_state_e app_state = state_init;
 
-
-sd_card_t * sd_if_init( void );
-void sd_if_deinit( sd_card_t * sd_card );
 void init_buttons( void );
 void button_cb( uint gpio_no, uint32_t events );
 int64_t enable_button( alarm_id_t alarm_id, void * user_data );
@@ -58,40 +53,39 @@ void core1_entry()
     int queue_lvl = 0;
     uint32_t data[256];
     sd_card_t * storage;
-    FRESULT f_result = FR_OK;
-    FIL f_file;
 
     storage = sd_if_init();
     if ( NULL == storage ){
-        printf( "Error initializing SD Card.\n") ;
         return;
     }
 
-    const char* const filename = "bmt_test.log";
-    f_result = f_open( &f_file, filename, FA_OPEN_APPEND | FA_WRITE );
-    if ( FR_OK != f_result && FR_EXIST != f_result ) {
-        printf( "f_open(%s) error: %s (%d)\n", filename, FRESULT_str(f_result), f_result );
-    } 
-
     while (1) {
-        if ( app_state != state_idle ) {
-            queue_lvl = queue_get_level(&core_queue);
-            if(  queue_lvl > QUEUE_WORK_LEVEL ) {
-                for ( idx = 0; idx < queue_lvl; idx++ ) {
-                    queue_remove_blocking(&core_queue, (data+idx));
+        switch( app_state ) {
+            case state_start_file:
+                sd_if_open_new_file();
+                app_state = state_start;
+                break;
+            case state_meas:
+            case state_stop:
+                queue_lvl = queue_get_level(&core_queue);
+                if(  queue_lvl > QUEUE_WORK_LEVEL ) {
+                    for ( idx = 0; idx < queue_lvl; idx++ ) {
+                        queue_remove_blocking(&core_queue, (data+idx));
+                    }
+                    sd_if_write_to_file( (void*)data, (sizeof(uint32_t)*queue_lvl) );
                 }
-
-                f_write( &f_file, data, (sizeof(uint32_t)*queue_lvl), NULL);
-                f_sync( &f_file );
-            }
+                break;
+            case state_stop_file:
+                sd_if_close_file();
+                app_state = state_idle;
+                break;
+            default:
+                sleep_ms( 25 );
+                break;
         }
     }
 
     /* We will not hit this. */
-    f_result = f_close( & f_file );
-    if ( FR_OK != f_result ) {
-        printf( "f_close error: %s (%d)\n", FRESULT_str(f_result), f_result );
-    }
     sd_if_deinit( storage );
 }
 
@@ -110,13 +104,11 @@ int main() {
 
     queue_init( &core_queue, sizeof(uint32_t), 256 );
   
-    sleep_ms(1000);
-    
     printf( "Welcome to BMT v%d.%d.%d\n", BMT_MAJOR, BMT_MINOR, BMT_BUGFIX );
 
-   multicore_launch_core1(core1_entry);
+    multicore_launch_core1(core1_entry);
 
-   sleep_ms(1000);
+    sleep_ms(2000);
 
     /* Initialize data collection. */
     if ( 0 != data_collector_init( &core_queue ) ) {
@@ -125,7 +117,7 @@ int main() {
     }
 
     app_state = state_idle;
-    printf( "AppState: %d\n", app_state);
+
     /* Grab data. */
     while (true) {
         switch( app_state ) {
@@ -133,15 +125,12 @@ int main() {
                 if ( 0 != data_collector_collect_and_push() ) {
                     printf( "Error during data collection.\n");
                 }
-                printf( "Meas done\n");
                 break;
             case state_stop:
-                printf( "Stop measurement.\n");
                 data_collector_stop();
-                app_state = state_idle;
+                app_state = state_stop_file;
                 break;
             case state_start:
-                printf( "Start measurement.\n");
                 data_collector_start();
                 app_state = state_meas;
                 break;
@@ -156,26 +145,6 @@ int main() {
 }
 
 
-sd_card_t * sd_if_init( void )
-{
-    time_init();
-
-    sd_card_t * sd_card = sd_get_by_num(0);
-    FRESULT f_result = f_mount( &sd_card->fatfs, sd_card->pcName, 1 );
-
-    if ( FR_OK != f_result ) {
-        printf( "Error mounting: %s (%d)\n", FRESULT_str(f_result), f_result );
-        return NULL;
-    }
-
-    return sd_card;
-}
-
-void sd_if_deinit( sd_card_t * sd_card )
-{
-    f_unmount( sd_card->pcName );
-}
-
 void button_cb( uint gpio_no, uint32_t events )
 {
     if ( buttton_pressed ) {
@@ -186,7 +155,7 @@ void button_cb( uint gpio_no, uint32_t events )
             case BTN_START_STOP:
                 switch( app_state ) {
                     case state_idle:
-                        app_state = state_start;
+                        app_state = state_start_file;
                         break;
                     case state_meas:
                         app_state = state_stop;
@@ -209,7 +178,6 @@ void button_cb( uint gpio_no, uint32_t events )
             default:
                 break;
         }
-        printf( "GPIO Button %d pressed. AppState: %d\n", gpio_no, app_state );
     }
 
     alarm_id = add_alarm_in_ms( debounce_time, enable_button, NULL, false );

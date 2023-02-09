@@ -18,6 +18,7 @@ add_executable(bmt
     gps_collector/gps_collector.c
     adc_collector/adc_collector.c
     data_collector/data_collector.c
+    sd_if/sd_if.c
 )
 
 
