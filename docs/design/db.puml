@@ -1,0 +1,46 @@
+@startuml BMT DB
+!define primary_key(x) <b><color:#b8861b><&key></color> x</b>
+!define foreign_key(x) <color:#aaaaaa><&key></color> x
+!define column(x) <color:#efefef><&media-record></color> x
+!define table(x) entity x << (T, white) >>
+
+
+table( sensor_calibrations ) {
+  primary_key( sensor_id ): UUID 
+  column( sensor_name ): TEXT
+  column( adc_value_zero ): INT
+  column( adc_value_max): INT
+  column( range_mm ): INT
+}
+
+table( bikes ) {
+  primary_key( bike_id ): UUID 
+  column( bike_name ): TEXT
+  column( travel_fork_mm ): INT
+  column( travel_shock_mm ): INT
+  column( travel_rear_mm): INT
+  column( head_angle_degree ): FLOAT
+  column( frame_linkage ): TEXT/BLOB
+}
+
+table( setups ) {
+  primary_key( setup_id ): UUID 
+  foreign_key( fork_sensor_id ): INT
+  foreign_key( shock_sensor_id ): INT
+  foreign_key( bike_id ): INT
+}
+
+table( sessions ){
+    primary_key( session_id ): UUID
+    column( session_name ): INT
+    column( session_datetime ): TEXT
+    foreign_key( setup_id ): INT
+    column( travel_data ): TEXT/BLOB
+    column( gps_data ): TEXT/BLOB    
+}
+
+sessions }|--|| setups
+setups }|--|| bikes
+setups }|--|| sensor_calibrations
+setups }|--|| sensor_calibrations
+@enduml
