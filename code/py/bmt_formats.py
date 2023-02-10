@@ -2,6 +2,8 @@ DATA_HEADER_POS_TYPE = 0
 DATA_HEADER_POS_RES = 1
 DATA_HEADER_POS_LENGTH = 2
 
+GPS_SENTENCES = ['$GPGGA', '$GPVTG', '$GPRMC']
+
 DATA_HEADER_FMT = '<cBH'
 # [0]: uint8    - Data type
 # [1]: uint8    - Reserved
