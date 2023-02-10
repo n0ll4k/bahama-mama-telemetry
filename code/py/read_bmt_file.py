@@ -22,43 +22,61 @@ class BmtLogReader:
     @staticmethod
     def parse_file( file_path ):
         gps_str = ""
+        travel_info_list = list()
         print( "Reading data file: {}".format( file_path) )
         raw_data = BmtLogReader._read_file( file_path )
-             
-        
+                
         while( len(raw_data) > 0 ):
             data_header = struct.unpack( bmt_fmt.DATA_HEADER_FMT, raw_data[:struct.calcsize(bmt_fmt.DATA_HEADER_FMT)])
             raw_data = raw_data[struct.calcsize(bmt_fmt.DATA_HEADER_FMT):]
             if ( data_header[bmt_fmt.DATA_HEADER_POS_TYPE] == b't' ):
-                print( data_header)
-                BmtLogReader.parse_travel_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]] )
+                # Collect all travel data
+                travel_info_list.extend(BmtLogReader.parse_travel_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]] ))
             elif ( data_header[bmt_fmt.DATA_HEADER_POS_TYPE] == b'g'):
+                # Collect complete GPS stream
                 gps_str = BmtLogReader.collect_gps_information( raw_data[:data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]], gps_str)
             else:
                 print( "Unknown Block: {} | Length: {}".format(data_header[bmt_fmt.DATA_HEADER_POS_TYPE], data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]))
             
             raw_data = raw_data[data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]:]
 
+        # Parse all GPS data
         gps_data = BmtLogReader.parse_gps_information( gps_str)
-        gps_filename = "{}-{}_{}.csv".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
-        gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
+        
+        # Add data to dataframes for easy storage
+        travel_df = pd.DataFrame.from_dict( travel_info_list )
         gps_df = pd.DataFrame.from_dict( gps_data )
         
+        
+        base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
+        gps_filename = "{}GPS.csv".format(base_filename)
+        travel_filename = "{}TRAVEL.csv".format(base_filename)
+        gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
+        travel_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), travel_filename )
+        
         gps_df.to_csv(gps_path)
+        travel_df.to_csv(travel_path)
 
-
+        return ( travel_path, gps_path )
 
     @staticmethod
     def parse_travel_information( travel_raw_data  ):
+        travel_information_list = list()
         #TODO: Save data sets (To DB?)
-        timestamp = struct.unpack( bmt_fmt.TIMESTAMP_FMT, travel_raw_data[0:struct.calcsize(bmt_fmt.TIMESTAMP_FMT)])
-        print( timestamp )
+        timestamp = struct.unpack( bmt_fmt.TIMESTAMP_FMT, travel_raw_data[0:struct.calcsize(bmt_fmt.TIMESTAMP_FMT)])[0]
         travel_raw_data = travel_raw_data[struct.calcsize(bmt_fmt.TIMESTAMP_FMT):]
         
         while( len(travel_raw_data) >= struct.calcsize(bmt_fmt.TRAVEL_INFORMATION_FMT) ):
+            travel_info_dict = dict()
             travel_information = struct.unpack( bmt_fmt.TRAVEL_INFORMATION_FMT, travel_raw_data[:struct.calcsize(bmt_fmt.TRAVEL_INFORMATION_FMT)])
             travel_raw_data = travel_raw_data[struct.calcsize(bmt_fmt.TRAVEL_INFORMATION_FMT):]
-            #print( travel_information )
+            travel_info_dict['int_timestamp'] = timestamp
+            travel_info_dict['fork_adc'] = travel_information[0]
+            travel_info_dict['shock_adc'] = travel_information[1]
+            timestamp += 1
+            travel_information_list.append(travel_info_dict)
+        
+        return travel_information_list
 
     @staticmethod
     def collect_gps_information( gps_stream_data, gps_raw_storage ):
@@ -105,15 +123,6 @@ class BmtLogReader:
         
         return gps_dict_list
             
-        
-        
-    
-
-
-        
-
-
-
 if __name__ == "__main__":
     
     import argparse
