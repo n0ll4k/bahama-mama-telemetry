@@ -2,7 +2,7 @@
 
 Bahama Mama Telemetry aims to be a simple suspension telemetry system. Most of the parts shall be "off the shelf".
 
-In general it shall have a similar feature set as the BYB system, the only problem will be the sampling frequency. As 1000Hz seems to be a bit too much for a small microcontroller as used in this system.
+In general it shall have a similar feature set as the BYB system.
 
 First of all the goals or requirements of the system:
 1. The system shall read two position sensors via the ADC of the used microcontroller.
