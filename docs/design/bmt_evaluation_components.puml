@@ -1,0 +1,13 @@
+@startuml Bahama Mama Telemetry Evaluation Components
+
+[Data Reader] as reader
+[DB Interface] as db_if
+[Data visualization] as visualizer
+[Application Logic] as app_logic
+
+
+app_logic -d-> visualizer
+app_logic -d-> reader
+
+visualizer --> db_if
+@enduml

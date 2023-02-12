@@ -1,0 +1,19 @@
+@startjson Sensor Calibration JSON file
+{
+    "sensor_name": "Dummy sensor fork",
+    "adc_cal_zero": 25,
+    "adc_val_max": 4095,
+    "range_mm": 200
+}
+@endjson
+
+@startjson Bike data JSON file
+{
+    "bike_name": "Kavenz VHP16 nollak",
+    "travel_fork_mm": 170,
+    "travel_shock_mm": 65,
+    "travel_rear_wheel_mm": 160,
+    "head_angle_degree": 64,
+    "frame_linkage_curve": "path_to_linkage_file"
+}
+@endjson
