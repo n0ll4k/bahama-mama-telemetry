@@ -1,7 +1,7 @@
 @startjson Sensor Calibration JSON file
 {
     "sensor_name": "Dummy sensor fork",
-    "adc_cal_zero": 25,
+    "adc_val_zero": 25,
     "adc_val_max": 4095,
     "range_mm": 200
 }
