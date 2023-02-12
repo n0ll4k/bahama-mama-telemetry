@@ -9,5 +9,5 @@
 app_logic -d-> visualizer
 app_logic -d-> reader
 
-visualizer --> db_if
+app_logic --> db_if
 @enduml
