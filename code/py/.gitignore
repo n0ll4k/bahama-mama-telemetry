@@ -8,3 +8,9 @@ __pycache__/
 
 # Sample log files
 *.log
+
+# Parse CSV data
+*.csv
+
+# Visualized data
+*.html
