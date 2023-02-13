@@ -1,8 +1,11 @@
 import pandas as pd
+import numpy as np
 from bokeh.io import curdoc
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource
+import bokeh.layouts
 from bmt_calculations import BmtCalculations
+
 
 
 class BmtVisualization:
@@ -17,19 +20,63 @@ class BmtVisualization:
         return travel_df
     
     @staticmethod
+    def create_travel_plot( travel_df ):
+        travel_source = ColumnDataSource(travel_df)
+        travel_plot = figure(title="Plot responsive sizing example",
+                      width=1000,
+                      height=350,
+                      x_axis_label="Timestamp",
+                      y_axis_label="Travel",)
+        travel_plot.line( x='int_timestamp', y='fork_mm', source=travel_source, legend_label='front', color='steelblue', line_width=2)
+        travel_plot.line( x='int_timestamp', y='shock_mm', source=travel_source, legend_label='rear', color='green', line_width=2)
+        return travel_plot
+    
+    @staticmethod 
+    def create_travel_histograms( travel_df, damper ):
+        hist_plot = figure( width=500, 
+                            height=350, 
+                            toolbar_location=None )
+        if damper == "fork":
+            column = "fork_mm"
+            name = "Fork"
+            color="steelblue"
+        elif damper == "shock":
+            column = "shock_mm"
+            name = "Shock"
+            color="green"
+        else:
+            column = ""
+            name = ""
+            return hist_plot        
+        
+        hist, edges = np.histogram(travel_df[column], density=True )
+        hist_plot.quad( top=hist, 
+                        bottom=0, 
+                        left=edges[:-1], 
+                        right=edges[1:], 
+                        fill_color=color,
+                        line_color='gainsboro' )
+        hist_plot.y_range.start = 0
+        hist_plot.xaxis.axis_label = "Travel"
+        hist_plot.title = "{} Histogram".format(name)
+
+        return hist_plot
+
+
+    @staticmethod
     def present_data( travel_df ):
         curdoc().theme = "dark_minimal"
 
-        travel_source = ColumnDataSource(travel_df)
-        plot = figure(title="Plot responsive sizing example",
-                      sizing_mode="stretch_width",
-                      height=250,
-                      x_axis_label="Timestamp",
-                      y_axis_label="Travel",)
-        plot.line( x='int_timestamp', y='fork_mm', source=travel_source, legend_label='front', line_width=2)
-        plot.line( x='int_timestamp', y='shock_mm', source=travel_source, legend_label='rear', color='green', line_width=2)
+        travel_plot = BmtVisualization.create_travel_plot( travel_df )
 
-        show(plot)
+        fork_hist = BmtVisualization.create_travel_histograms( travel_df, "fork" )
+        shock_hist = BmtVisualization.create_travel_histograms( travel_df, "shock" )
+
+        layout = bokeh.layouts.layout( [
+            [ travel_plot ],
+            [ fork_hist, shock_hist ] ] )
+
+        show(layout)
 
 
 if __name__ == "__main__":

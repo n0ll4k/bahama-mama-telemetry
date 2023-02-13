@@ -19,7 +19,7 @@ class BmtCalculations:
 
         input_df['fork_mm'] = input_df.apply( lambda row: fork_calc.adc2mm(row.fork_adc), axis=1)
         input_df['shock_mm'] = input_df.apply( lambda row: shock_calc.adc2mm(row.shock_adc), axis=1)
-        print( input_df )
+        
         return input_df
         
 
