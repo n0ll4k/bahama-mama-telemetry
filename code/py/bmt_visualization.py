@@ -10,7 +10,7 @@ from bmt_calculations import BmtCalculations
 
 
 class BmtVisualization:
-    MAP_DIFF = 1000
+    MAP_DIFF = 500
     @staticmethod
     def open_travel_information( travel_info_path ):
         travel_df = pd.DataFrame()
@@ -94,14 +94,11 @@ class BmtVisualization:
     
     @staticmethod
     def create_map( gps_df ):
-        lat_range = [gps_df['lat'].max()/100, gps_df['lat'].min()/100]
-        lon_range = [gps_df['lon'].max()/100, gps_df['lon'].min()/100]
-
-        mercartor_range_max = BmtCalculations.lat_lon2x_y( lat_range[0], lon_range[0])
-        mercartor_range_min = BmtCalculations.lat_lon2x_y( lat_range[0], lon_range[0])
-
-        map_x_range = ( (mercartor_range_min[0]-BmtVisualization.MAP_DIFF), (mercartor_range_max[0]+BmtVisualization.MAP_DIFF) )
-        map_y_range = ( (mercartor_range_min[1]-BmtVisualization.MAP_DIFF), (mercartor_range_max[1]+BmtVisualization.MAP_DIFF) )
+        max_x_y = BmtCalculations.nmea0813_to_xy( gps_df['lat'].max(), gps_df['lon'].max())
+        min_x_y = BmtCalculations.nmea0813_to_xy( gps_df['lat'].min(), gps_df['lon'].min())
+        
+        map_x_range = ( (min_x_y[0]-BmtVisualization.MAP_DIFF), (max_x_y[0]+BmtVisualization.MAP_DIFF) )
+        map_y_range = ( (min_x_y[1]-BmtVisualization.MAP_DIFF), (max_x_y[1]+BmtVisualization.MAP_DIFF) )
         
         map = figure(title="Map",
                 x_axis_label='X [m]',
