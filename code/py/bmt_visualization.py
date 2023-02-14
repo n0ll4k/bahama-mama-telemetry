@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-import bokeh.layouts
 import xyzservices.providers as xyz
+from bokeh.layouts import row, column, grid
 from bokeh.io import curdoc
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource
@@ -85,11 +85,9 @@ class BmtVisualization:
         shock_hist = BmtVisualization.create_travel_histograms( travel_df, "shock" )
         map = BmtVisualization.create_map( gps_df )
 
-        layout = bokeh.layouts.layout( [
-            [ travel_plot ],
-            [ fork_hist, shock_hist ],
-            [ map] ] )
-
+        
+        #layout = grid(row(column(travel_plot, row(fork_hist, shock_hist)), map))
+        layout = grid(row(column(travel_plot, row(fork_hist, shock_hist), sizing_mode='stretch_both'), map))
         show(layout)
     
     @staticmethod
@@ -106,6 +104,7 @@ class BmtVisualization:
                 x_axis_label='X [m]',
                 y_axis_label='Y [m]',
                 match_aspect=True,
+                height=700,
                 x_range=map_x_range,
                 y_range=map_y_range)
         # Add map tile
