@@ -97,8 +97,8 @@ int data_collector_collect_and_push( void )
         queue_add_blocking( data_queue, (uint32_t*)&header);    /* Add Header to stream. */
         queue_add_blocking( data_queue, &timestamp);            /* Add timestamp to stream. */
         for ( adc_idx = 0; idx < BUFFERSIZE, adc_idx < NUM_SAMPLES; idx++, adc_idx+=2 ) {
-            travel_info.fork_data = adc_data[adc_idx];
-            travel_info.shock_data = adc_data[adc_idx+1];
+            travel_info.fork_data = (( adc_data[adc_idx] & 0xFFF8 ) >> 3 );
+            travel_info.shock_data = (( adc_data[adc_idx+1] & 0xFFF8 ) >> 3 );
             queue_add_blocking(data_queue, (uint32_t*)&travel_info );
         }
     }
