@@ -120,18 +120,10 @@ if __name__ == "__main__":
     parser.add_argument( "-g", "--gps", dest="gps_file", action="store", required=True, help="Path to gps information file to be read." )
     args = parser.parse_args()
     
-    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 512, 'adc_val_max': 3, 'range_mm': 200 }
-    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 512, 'adc_val_max': 3, 'range_mm': 75 }
-    gps_df = BmtVisualization.open_gps_information( args.gps_file )
     travel_df = BmtVisualization.open_travel_information( args.travel_file )
+    gps_df = BmtVisualization.open_travel_information( args.gps_file )
 
-<<<<<<< HEAD
-    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 3, 'adc_val_max': 512, 'range_mm': 200 }
-    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 3, 'adc_val_max': 512, 'range_mm': 75 }
-    df = BmtCalculations.adc_to_mm(df, fork_calibration_data, shock_calibration_data )
-    BmtVisualization.present_data( df )
-=======
-    
-    df = BmtCalculations.adc_to_mm(travel_df, fork_calibration_data, shock_calibration_data )
+    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 25, 'adc_val_max': 4095, 'range_mm': 200 }
+    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 26, 'adc_val_max': 4090, 'range_mm': 75 }
+    travel_df = BmtCalculations.adc_to_mm(travel_df, fork_calibration_data, shock_calibration_data )
     BmtVisualization.present_data( travel_df, gps_df )
->>>>>>> ca5d6d328919a7521ee853850052011f9cadb69c
