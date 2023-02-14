@@ -94,21 +94,25 @@ class BmtVisualization:
     
     @staticmethod
     def create_map( gps_df ):
-        max_x_y = BmtCalculations.nmea0813_to_xy( gps_df['lat'].max(), gps_df['lon'].max())
-        min_x_y = BmtCalculations.nmea0813_to_xy( gps_df['lat'].min(), gps_df['lon'].min())
+        # Get Map dimensions
+        map_x_range = gps_df['x'].min()-BmtVisualization.MAP_DIFF, gps_df['x'].max()+BmtVisualization.MAP_DIFF
+        map_y_range = gps_df['y'].min()-BmtVisualization.MAP_DIFF, gps_df['y'].max()+BmtVisualization.MAP_DIFF
         
-        map_x_range = ( (min_x_y[0]-BmtVisualization.MAP_DIFF), (max_x_y[0]+BmtVisualization.MAP_DIFF) )
-        map_y_range = ( (min_x_y[1]-BmtVisualization.MAP_DIFF), (max_x_y[1]+BmtVisualization.MAP_DIFF) )
-        
+        # Load data
+        source = ColumnDataSource(gps_df)
+
+        # Create map
         map = figure(title="Map",
                 x_axis_label='X [m]',
                 y_axis_label='Y [m]',
                 match_aspect=True,
                 x_range=map_x_range,
                 y_range=map_y_range)
+        # Add map tile
         map.add_tile(xyz.OpenStreetMap.Mapnik)
 
-        #TODO Add gps track. Test data needed.
+        # Add data points
+        map.line(x="x", y="y", color="green", alpha=0.8, source=source, line_width=2)
 
         return map
 

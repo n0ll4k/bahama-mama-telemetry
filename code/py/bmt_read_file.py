@@ -4,6 +4,7 @@ import pynmea2
 import datetime
 import bmt_formats as bmt_fmt
 import pandas as pd
+from bmt_calculations import BmtCalculations
 
 
 class BmtLogReader:
@@ -49,22 +50,26 @@ class BmtLogReader:
         
         try:
             base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
-<<<<<<< HEAD
         except:
             base_filename = "{}_".format(os.path.basename(file_path[:-4]))
-=======
-        except TypeError:
-            base_filename = os.path.basename(file_path[:-4])
->>>>>>> ca5d6d328919a7521ee853850052011f9cadb69c
         gps_filename = "{}GPS.csv".format(base_filename)
         travel_filename = "{}TRAVEL.csv".format(base_filename)
         gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
         travel_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), travel_filename )
-        
+
+        BmtLogReader.transform_gps_data( gps_df )
         gps_df.to_csv(gps_path)
         travel_df.to_csv(travel_path)
 
         return ( travel_path, gps_path )
+
+    @staticmethod
+    def transform_gps_data( gps_df: pd.DataFrame ):
+        gps_df['lat_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lat, row.lat_dir ), axis=1)
+        gps_df['lon_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lon, row.lon_dir ), axis=1)
+        gps_df[['x', 'y']] = gps_df.apply( lambda row: BmtCalculations.lat_lon2x_y( row.lat_dec, row.lon_dec ), axis=1, result_type='expand')
+        return gps_df
+
 
     @staticmethod
     def parse_travel_information( travel_raw_data  ):
@@ -113,14 +118,14 @@ class BmtLogReader:
             for sentence in sentences:
                 msg = pynmea2.parse(sentence)
                 if type(msg) == pynmea2.types.talker.VTG:
-                    gps_dict['speed'] = msg.spd_over_grnd_kmph
+                    gps_dict['speed'] = float(msg.spd_over_grnd_kmph)
                 elif type(msg) == pynmea2.types.talker.GGA:
                     gps_dict['timestamp'] = msg.timestamp
-                    gps_dict['lat'] = msg.lat
+                    gps_dict['lat'] = float(msg.lat)
                     gps_dict['lat_dir'] = msg.lat_dir
-                    gps_dict['lon'] = msg.lon
+                    gps_dict['lon'] = float(msg.lon)
                     gps_dict['lon_dir'] = msg.lon_dir
-                    gps_dict['altitude'] = msg.altitude
+                    gps_dict['altitude'] = float(msg.altitude)
                     gps_dict['altitude_unit'] = msg.altitude_units
                 elif type(msg) == pynmea2.types.talker.RMC:
                     gps_dict['date'] = msg.datestamp

@@ -17,26 +17,18 @@ class BmtCalculationsAdc2Mm:
 
 class BmtCalculations:
     @staticmethod
-    def rad2dec( lat, lon ):
-        lat_deg = float(int( lat / 100 )) 
-        lat_dec=  lat_deg + (( lat - (lat_deg * 100 )) / 60 )
-        lon_deg = float(int( lon / 100 )) 
-        lon_dec=  lon_deg + (( lon - (lon_deg * 100 )) / 60 )
-        return( lat_dec, lon_dec )
+    def rad2dec( input, direction):
+        deg = float(int( input / 100 )) 
+        decimal =  deg + (( input - (deg * 100 )) / 60 )
+        if direction in ['W', 'S']:
+            decimal *= -1
+
+        return( decimal )
     
     @staticmethod
     def lat_lon2x_y(lat, lon):
         x, y = lonlat_to_webmercator.transform(lon, lat)
-        return x, y
-    
-    @staticmethod
-    def nmea0813_to_xy( lat, lon ):
-        lat_deg = float(int( lat / 100 )) 
-        lat_dec=  lat_deg + (( lat - (lat_deg * 100 )) / 60 )
-        lon_deg = float(int( lon / 100 )) 
-        lon_dec=  lon_deg + (( lon - (lon_deg * 100 )) / 60 )
-        x, y = lonlat_to_webmercator.transform(lon_dec, lat_dec)
-        return x, y
+        return [x, y]
 
     @staticmethod
     def adc_to_mm( input_df : pd.DataFrame, fork_calib: dict, shock_calib: dict ):
