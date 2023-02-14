@@ -49,8 +49,13 @@ class BmtLogReader:
         
         try:
             base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
+<<<<<<< HEAD
         except:
             base_filename = "{}_".format(os.path.basename(file_path[:-4]))
+=======
+        except TypeError:
+            base_filename = os.path.basename(file_path[:-4])
+>>>>>>> ca5d6d328919a7521ee853850052011f9cadb69c
         gps_filename = "{}GPS.csv".format(base_filename)
         travel_filename = "{}TRAVEL.csv".format(base_filename)
         gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )

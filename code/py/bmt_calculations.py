@@ -1,4 +1,8 @@
 import pandas as pd
+from pyproj import Transformer
+from pyproj import CRS
+
+lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 class BmtCalculationsAdc2Mm:
     def __init__( self, sensor_info: dict ):
@@ -13,6 +17,28 @@ class BmtCalculationsAdc2Mm:
 
 class BmtCalculations:
     @staticmethod
+    def rad2dec( lat, lon ):
+        lat_deg = float(int( lat / 100 )) 
+        lat_dec=  lat_deg + (( lat - (lat_deg * 100 )) / 60 )
+        lon_deg = float(int( lon / 100 )) 
+        lon_dec=  lon_deg + (( lon - (lon_deg * 100 )) / 60 )
+        return( lat_dec, lon_dec )
+    
+    @staticmethod
+    def lat_lon2x_y(lat, lon):
+        x, y = lonlat_to_webmercator.transform(lon, lat)
+        return x, y
+    
+    @staticmethod
+    def nmea0813_to_xy( lat, lon ):
+        lat_deg = float(int( lat / 100 )) 
+        lat_dec=  lat_deg + (( lat - (lat_deg * 100 )) / 60 )
+        lon_deg = float(int( lon / 100 )) 
+        lon_dec=  lon_deg + (( lon - (lon_deg * 100 )) / 60 )
+        x, y = lonlat_to_webmercator.transform(lon_dec, lat_dec)
+        return x, y
+
+    @staticmethod
     def adc_to_mm( input_df : pd.DataFrame, fork_calib: dict, shock_calib: dict ):
         fork_calc = BmtCalculationsAdc2Mm( fork_calib )
         shock_calc = BmtCalculationsAdc2Mm( shock_calib )
@@ -21,5 +47,6 @@ class BmtCalculations:
         input_df['shock_mm'] = input_df.apply( lambda row: shock_calc.adc2mm(row.shock_adc), axis=1)
         
         return input_df
-        
+    
+    
 
