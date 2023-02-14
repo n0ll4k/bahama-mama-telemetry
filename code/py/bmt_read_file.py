@@ -47,8 +47,10 @@ class BmtLogReader:
         travel_df = pd.DataFrame.from_dict( travel_info_list )
         gps_df = pd.DataFrame.from_dict( gps_data )
         
-        
-        base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
+        try:
+            base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
+        except TypeError:
+            base_filename = os.path.basename(file_path[:-4])
         gps_filename = "{}GPS.csv".format(base_filename)
         travel_filename = "{}TRAVEL.csv".format(base_filename)
         gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
