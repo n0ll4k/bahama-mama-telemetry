@@ -1,4 +1,7 @@
 import pandas as pd
+from pyproj import Transformer
+
+lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 class BmtCalculationsAdc2Mm:
     def __init__( self, sensor_info: dict ):
@@ -21,5 +24,10 @@ class BmtCalculations:
         input_df['shock_mm'] = input_df.apply( lambda row: shock_calc.adc2mm(row.shock_adc), axis=1)
         
         return input_df
+    
+    @staticmethod
+    def lat_lon2x_y(lat, lon):
+        x, y = lonlat_to_webmercator.transform(lon, lat)
+        return x, y
         
 
