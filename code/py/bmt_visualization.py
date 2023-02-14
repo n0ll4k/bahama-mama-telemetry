@@ -87,7 +87,7 @@ if __name__ == "__main__":
     
     df = BmtVisualization.open_travel_information( args.file )
 
-    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 25, 'adc_val_max': 4095, 'range_mm': 200 }
-    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 26, 'adc_val_max': 4090, 'range_mm': 75 }
+    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 3, 'adc_val_max': 512, 'range_mm': 200 }
+    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 3, 'adc_val_max': 512, 'range_mm': 75 }
     df = BmtCalculations.adc_to_mm(df, fork_calibration_data, shock_calibration_data )
     BmtVisualization.present_data( df )
