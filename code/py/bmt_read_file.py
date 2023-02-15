@@ -134,9 +134,13 @@ if __name__ == "__main__":
     shock_sensor_dummy.set_adc_value_max( 512 )
     shock_sensor_dummy.set_range_mm( 75 )
 
+    dummy_bike = BmtBike()
+    dummy_bike.set_head_angle( 64.0 )
+
     das_setup = BmtSetup()
     das_setup.set_fork_sensor( fork_sensor_dummy )
     das_setup.set_shock_sensor( shock_sensor_dummy )
+    das_setup.set_bike( dummy_bike )
 
     BmtCalculations.transform_gps_data( gps_df )
     BmtCalculations.transform_travel_data( travel_df, das_setup )

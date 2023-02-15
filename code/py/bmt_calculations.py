@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 from pyproj import Transformer
 from bmt_formats import BmtSetup, BmtBike, BmtSensorCalibration
@@ -44,12 +45,30 @@ class BmtCalculations:
         return gps_df
     
     @staticmethod
+    def calc_front_travel( fork_mm, head_angle ):
+        linear_travel = fork_mm * math.sin(head_angle)
+        return round( linear_travel, 1 )
+    
+    @staticmethod
+    def calc_travel_speed_mm_s( travel_diff_mm, time_diff_ms ):
+        return (( travel_diff_mm * 1000 ) / time_diff_ms )
+    
+    @staticmethod
     def transform_travel_data( travel_df, setup: BmtSetup ):
+        # Tranform ADC values to mm.
         travel_df = BmtCalculations.adc_to_mm(travel_df, setup.fork_sensor(), 'fork_mm' )
         travel_df = BmtCalculations.adc_to_mm(travel_df, setup.shock_sensor(), 'shock_mm' )
 
-        # TODO calculate fork linear travel
+        # Calculate linear front end travel
+        travel_df['front_end_lin_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
         # TODO calculate bike rear end linear travel
+
+        # Calculate tick differences
+        travel_df['tick_diff'] = travel_df['int_timestamp'].diff()
+        # Calculate front end speeds
+        travel_df['front_diff_mm'] = travel_df['front_end_lin_mm'].diff().round(1)
+        travel_df['front_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.front_diff_mm, row.tick_diff ), axis=1)
+        # TODO Calculate read end speeds
         
         return travel_df
 
