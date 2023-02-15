@@ -7,8 +7,6 @@ from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource
 from bmt_calculations import BmtCalculations
 
-
-
 class BmtVisualization:
     MAP_DIFF = 500
     @staticmethod
@@ -125,8 +123,5 @@ if __name__ == "__main__":
     
     travel_df = BmtVisualization.open_travel_information( args.travel_file )
     gps_df = BmtVisualization.open_travel_information( args.gps_file )
-
-    fork_calibration_data = {'sensor_name':'Dummy fork sensor', 'adc_val_zero': 25, 'adc_val_max': 4095, 'range_mm': 200 }
-    shock_calibration_data = {'sensor_name':'Dummy shock sensor', 'adc_val_zero': 26, 'adc_val_max': 4090, 'range_mm': 75 }
-    travel_df = BmtCalculations.adc_to_mm(travel_df, fork_calibration_data, shock_calibration_data )
+    
     BmtVisualization.present_data( travel_df, gps_df )
