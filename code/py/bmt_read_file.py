@@ -47,21 +47,8 @@ class BmtLogReader:
         # Add data to dataframes for easy storage
         travel_df = pd.DataFrame.from_dict( travel_info_list )
         gps_df = pd.DataFrame.from_dict( gps_data )
-        
-        try:
-            base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), datetime.date.strftime(gps_data[0]['date'], "%Y-%m-%d"), datetime.time.strftime(gps_data[0]['timestamp'], "%H-%M-%S") )
-        except:
-            base_filename = "{}_".format(os.path.basename(file_path[:-4]))
-        gps_filename = "{}GPS.csv".format(base_filename)
-        travel_filename = "{}TRAVEL.csv".format(base_filename)
-        gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
-        travel_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), travel_filename )
 
-        BmtCalculations.transform_gps_data( gps_df )
-        gps_df.to_csv(gps_path)
-        travel_df.to_csv(travel_path)
-
-        return ( travel_path, gps_path )
+        return ( travel_df, gps_df )
 
 
     @staticmethod
@@ -128,10 +115,44 @@ class BmtLogReader:
         return gps_dict_list
             
 if __name__ == "__main__":
-    
     import argparse
+    from bmt_calculations import BmtCalculations
+    from bmt_formats import BmtSensorCalibration, BmtBike, BmtSetup
     parser = argparse.ArgumentParser(description="Reads BMT files.")
     parser.add_argument( "-f", "--file", dest="file", action="store", required=True, help="Path to file to be read." )
     args = parser.parse_args()
     
-    BmtLogReader.parse_file( args.file )
+    travel_df, gps_df = BmtLogReader.parse_file( args.file )
+
+    fork_sensor_dummy = BmtSensorCalibration()
+    fork_sensor_dummy.set_adc_value_zero( 3 ) 
+    fork_sensor_dummy.set_adc_value_max( 512 )
+    fork_sensor_dummy.set_range_mm( 200 )
+
+    shock_sensor_dummy = BmtSensorCalibration()
+    shock_sensor_dummy.set_adc_value_zero( 3 ) 
+    shock_sensor_dummy.set_adc_value_max( 512 )
+    shock_sensor_dummy.set_range_mm( 75 )
+
+    das_setup = BmtSetup()
+    das_setup.set_fork_sensor( fork_sensor_dummy )
+    das_setup.set_shock_sensor( shock_sensor_dummy )
+
+    BmtCalculations.transform_gps_data( gps_df )
+    BmtCalculations.transform_travel_data( travel_df, das_setup )
+    
+    try:
+        base_filename = "{}-{}_{}_".format(os.path.basename(args.file[:-4]), 
+                                           datetime.date.strftime(gps_df.loc[0]['date'], "%Y-%m-%d"), 
+                                           datetime.time.strftime(gps_df.loc[0]['timestamp'], "%H-%M-%S") )
+    except:
+        base_filename = "{}_".format(os.path.basename(args.file[:-4]))
+    gps_filename = "{}GPS.csv".format(base_filename)
+    travel_filename = "{}TRAVEL.csv".format(base_filename)
+    gps_path = os.path.join( os.path.abspath(os.path.dirname(args.file)), gps_filename )
+    travel_path = os.path.join( os.path.abspath(os.path.dirname(args.file)), travel_filename )
+
+    
+    gps_df.to_csv(gps_path)
+    travel_df.to_csv(travel_path)
+    

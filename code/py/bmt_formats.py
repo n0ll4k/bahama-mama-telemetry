@@ -33,7 +33,7 @@ class BmtSensorCalibration:
     def set_adc_value_zero( self, adc_val_zero ):
         self._adc_value_zero = adc_val_zero
 
-    def set_adc_value_zero( self, adc_val_max ):
+    def set_adc_value_max( self, adc_val_max ):
         self._adc_value_max = adc_val_max
 
     def set_range_mm( self, range_mm ):

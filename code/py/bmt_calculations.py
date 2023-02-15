@@ -1,12 +1,13 @@
 import pandas as pd
 from pyproj import Transformer
+from bmt_formats import BmtSetup, BmtBike, BmtSensorCalibration
 
 lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 class BmtCalculationsAdc2Mm:
-    def __init__( self, sensor_info: dict ):
-        self._gradient = sensor_info['range_mm'] / ( sensor_info['adc_val_max']-sensor_info['adc_val_zero'])
-        self._offset = sensor_info['range_mm'] - ( (sensor_info['range_mm']*sensor_info['adc_val_max']) / ( sensor_info['adc_val_max']-sensor_info['adc_val_zero']) )
+    def __init__( self, sensor_info: BmtSensorCalibration ):
+        self._gradient = sensor_info.range_mm() / ( sensor_info.adc_value_max()-sensor_info.adc_value_zero())
+        self._offset = sensor_info.range_mm() - ( (sensor_info.range_mm()*sensor_info.adc_value_max()) / ( sensor_info.adc_value_max()-sensor_info.adc_value_zero()) )
     
     def adc2mm( self, adc_val ):
         mm_val = adc_val * self._gradient + self._offset
@@ -28,12 +29,10 @@ class BmtCalculations:
         return [x, y]
 
     @staticmethod
-    def adc_to_mm( input_df : pd.DataFrame, fork_calib: dict, shock_calib: dict ):
-        fork_calc = BmtCalculationsAdc2Mm( fork_calib )
-        shock_calc = BmtCalculationsAdc2Mm( shock_calib )
+    def adc_to_mm( input_df : pd.DataFrame, calibration_data: BmtSensorCalibration, column_name: str ):
+        calculator = BmtCalculationsAdc2Mm( calibration_data )
 
-        input_df['fork_mm'] = input_df.apply( lambda row: fork_calc.adc2mm(row.fork_adc), axis=1)
-        input_df['shock_mm'] = input_df.apply( lambda row: shock_calc.adc2mm(row.shock_adc), axis=1)
+        input_df[column_name] = input_df.apply( lambda row: calculator.adc2mm(row.fork_adc), axis=1)
         
         return input_df
     
@@ -45,9 +44,14 @@ class BmtCalculations:
         return gps_df
     
     @staticmethod
-    def transform_input_data( travel_df, gps_df ):
+    def transform_travel_data( travel_df, setup: BmtSetup ):
+        travel_df = BmtCalculations.adc_to_mm(travel_df, setup.fork_sensor(), 'fork_mm' )
+        travel_df = BmtCalculations.adc_to_mm(travel_df, setup.shock_sensor(), 'shock_mm' )
 
-        return travel_df, gps_df
+        # TODO calculate fork linear travel
+        # TODO calculate bike rear end linear travel
+        
+        return travel_df
 
     
 
