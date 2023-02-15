@@ -1,6 +1,5 @@
 import pandas as pd
 from pyproj import Transformer
-from pyproj import CRS
 
 lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
@@ -12,8 +11,6 @@ class BmtCalculationsAdc2Mm:
     def adc2mm( self, adc_val ):
         mm_val = adc_val * self._gradient + self._offset
         return round(mm_val, 1 )
-
-
 
 class BmtCalculations:
     @staticmethod
@@ -39,6 +36,24 @@ class BmtCalculations:
         input_df['shock_mm'] = input_df.apply( lambda row: shock_calc.adc2mm(row.shock_adc), axis=1)
         
         return input_df
+    
+    @staticmethod
+    def transform_gps_data( gps_df: pd.DataFrame ):
+        gps_df['lat_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lat, row.lat_dir ), axis=1)
+        gps_df['lon_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lon, row.lon_dir ), axis=1)
+        gps_df[['x', 'y']] = gps_df.apply( lambda row: BmtCalculations.lat_lon2x_y( row.lat_dec, row.lon_dec ), axis=1, result_type='expand')
+        return gps_df
+    
+    @staticmethod
+    def transform_input_data( travel_df, gps_df ):
+
+        return travel_df, gps_df
+
+    
+
+
+
+
     
     
 

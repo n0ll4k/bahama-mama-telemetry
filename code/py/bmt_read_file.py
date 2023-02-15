@@ -57,24 +57,16 @@ class BmtLogReader:
         gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
         travel_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), travel_filename )
 
-        BmtLogReader.transform_gps_data( gps_df )
+        BmtCalculations.transform_gps_data( gps_df )
         gps_df.to_csv(gps_path)
         travel_df.to_csv(travel_path)
 
         return ( travel_path, gps_path )
 
-    @staticmethod
-    def transform_gps_data( gps_df: pd.DataFrame ):
-        gps_df['lat_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lat, row.lat_dir ), axis=1)
-        gps_df['lon_dec'] = gps_df.apply( lambda row: BmtCalculations.rad2dec( row.lon, row.lon_dir ), axis=1)
-        gps_df[['x', 'y']] = gps_df.apply( lambda row: BmtCalculations.lat_lon2x_y( row.lat_dec, row.lon_dec ), axis=1, result_type='expand')
-        return gps_df
-
 
     @staticmethod
     def parse_travel_information( travel_raw_data  ):
         travel_information_list = list()
-        #TODO: Save data sets (To DB?)
         timestamp = struct.unpack( bmt_fmt.TIMESTAMP_FMT, travel_raw_data[0:struct.calcsize(bmt_fmt.TIMESTAMP_FMT)])[0]
         travel_raw_data = travel_raw_data[struct.calcsize(bmt_fmt.TIMESTAMP_FMT):]
         
