@@ -40,7 +40,10 @@ class BmtLogReader:
                 print( "Unknown Block: {} | Length: {}".format(data_header[bmt_fmt.DATA_HEADER_POS_TYPE], data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]))
             
             raw_data = raw_data[data_header[bmt_fmt.DATA_HEADER_POS_LENGTH]:]
-
+        # Correct timestamp
+        start_timestamp = travel_info_list[0]['int_timestamp']
+        for dataset in travel_info_list:
+            dataset['int_timestamp'] = dataset['int_timestamp'] - start_timestamp
         # Parse all GPS data
         gps_data = BmtLogReader.parse_gps_information( gps_str)
         
@@ -71,7 +74,11 @@ class BmtLogReader:
 
     @staticmethod
     def collect_gps_information( gps_stream_data, gps_raw_storage ):
-        new_gps_data = gps_stream_data.decode().rstrip( '\x00')
+        try:
+            new_gps_data = gps_stream_data.decode().rstrip( '\x00')
+        except UnicodeDecodeError:
+            print( "Error decoding ")
+            new_gps_data = ""
         gps_raw_storage += new_gps_data
         return gps_raw_storage
 
@@ -95,17 +102,33 @@ class BmtLogReader:
         for sentences in chunks:
             gps_dict = dict()
             for sentence in sentences:
-                msg = pynmea2.parse(sentence)
+                try:
+                    msg = pynmea2.parse(sentence)
+                except:
+                    continue
                 if type(msg) == pynmea2.types.talker.VTG:
-                    gps_dict['speed'] = float(msg.spd_over_grnd_kmph)
+                    try:
+                        gps_dict['speed'] = float(msg.spd_over_grnd_kmph)
+                    except:
+                        gps_dict['speed'] = 0.0
                 elif type(msg) == pynmea2.types.talker.GGA:
-                    gps_dict['timestamp'] = msg.timestamp
-                    gps_dict['lat'] = float(msg.lat)
-                    gps_dict['lat_dir'] = msg.lat_dir
-                    gps_dict['lon'] = float(msg.lon)
-                    gps_dict['lon_dir'] = msg.lon_dir
-                    gps_dict['altitude'] = float(msg.altitude)
-                    gps_dict['altitude_unit'] = msg.altitude_units
+                    try:
+                        gps_dict['timestamp'] = msg.timestamp
+                        gps_dict['lat'] = float(msg.lat)
+                        gps_dict['lat_dir'] = msg.lat_dir
+                        gps_dict['lon'] = float(msg.lon)
+                        gps_dict['lon_dir'] = msg.lon_dir
+                        gps_dict['altitude'] = float(msg.altitude)
+                        gps_dict['altitude_unit'] = msg.altitude_units
+                    except:
+                        gps_dict['timestamp'] = 0
+                        gps_dict['lat'] = 0.0
+                        gps_dict['lat_dir'] = 'N'
+                        gps_dict['lon'] = 0.0
+                        gps_dict['lon_dir'] = 'E'
+                        gps_dict['altitude'] = 0.0
+                        gps_dict['altitude_unit'] = 'm'
+                        print( "Error parsing GGA.")
                 elif type(msg) == pynmea2.types.talker.RMC:
                     gps_dict['date'] = msg.datestamp
                 else:
@@ -125,13 +148,13 @@ if __name__ == "__main__":
     travel_df, gps_df = BmtLogReader.parse_file( args.file )
 
     fork_sensor_dummy = BmtSensorCalibration()
-    fork_sensor_dummy.set_adc_value_zero( 3 ) 
-    fork_sensor_dummy.set_adc_value_max( 512 )
+    fork_sensor_dummy.set_adc_value_zero( 25 ) 
+    fork_sensor_dummy.set_adc_value_max( 4095 )
     fork_sensor_dummy.set_range_mm( 200 )
 
     shock_sensor_dummy = BmtSensorCalibration()
-    shock_sensor_dummy.set_adc_value_zero( 3 ) 
-    shock_sensor_dummy.set_adc_value_max( 512 )
+    shock_sensor_dummy.set_adc_value_zero( 25 ) 
+    shock_sensor_dummy.set_adc_value_max( 4095 )
     shock_sensor_dummy.set_range_mm( 75 )
 
     dummy_bike = BmtBike()

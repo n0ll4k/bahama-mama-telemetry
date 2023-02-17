@@ -90,9 +90,13 @@ class BmtVisualization:
     
     @staticmethod
     def create_map( gps_df ):
-        # Get Map dimensions
-        map_x_range = gps_df['x'].min()-BmtVisualization.MAP_DIFF, gps_df['x'].max()+BmtVisualization.MAP_DIFF
-        map_y_range = gps_df['y'].min()-BmtVisualization.MAP_DIFF, gps_df['y'].max()+BmtVisualization.MAP_DIFF
+        try:
+            # Get Map dimensions
+            map_x_range = gps_df['x'].min()-BmtVisualization.MAP_DIFF, gps_df['x'].max()+BmtVisualization.MAP_DIFF
+            map_y_range = gps_df['y'].min()-BmtVisualization.MAP_DIFF, gps_df['y'].max()+BmtVisualization.MAP_DIFF
+        except:
+            map_x_range = (0,0)
+            map_y_range = (0,0)
         
         # Load data
         source = ColumnDataSource(gps_df)

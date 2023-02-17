@@ -17,7 +17,10 @@ class BmtCalculationsAdc2Mm:
 class BmtCalculations:
     @staticmethod
     def rad2dec( input, direction):
-        deg = float(int( input / 100 )) 
+        try:
+            deg = float(int( input / 100 )) 
+        except:
+            return( 0.0 )
         decimal =  deg + (( input - (deg * 100 )) / 60 )
         if direction in ['W', 'S']:
             decimal *= -1
@@ -56,8 +59,11 @@ class BmtCalculations:
     @staticmethod
     def transform_travel_data( travel_df, setup: BmtSetup ):
         # Tranform ADC values to mm.
-        travel_df = BmtCalculations.adc_to_mm(travel_df, setup.fork_sensor(), 'fork_mm' )
-        travel_df = BmtCalculations.adc_to_mm(travel_df, setup.shock_sensor(), 'shock_mm' )
+        fork_calculator = BmtCalculationsAdc2Mm( setup.fork_sensor() )
+        shock_calculator = BmtCalculationsAdc2Mm( setup.shock_sensor() )
+
+        travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
+        travel_df['shock_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc), axis=1)
 
         # Calculate linear front end travel
         travel_df['front_end_lin_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
