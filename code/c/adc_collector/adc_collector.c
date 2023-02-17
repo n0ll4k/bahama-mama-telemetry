@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -56,21 +57,26 @@ void adc_collector_stop_adc( void )
     adc_run(false);
 }
 
-void adc_collector_wait_for_new_data( uint16_t * adc_data, uint32_t * start_time )
-{
-        dma_channel_wait_for_finish_blocking( sample_channel );
+uint16_t * adc_collector_wait_for_new_data( uint32_t * start_time )
+{       
+    int idx = 0;
+    uint16_t * adc_data;
+    dma_channel_wait_for_finish_blocking( sample_channel );
 
-        if (flag) {
-            flag = false;
-            sample_pt = &sample_buffer_1[0];
-            adc_data = &sample_buffer_2[0];
-        } else {
-            flag = true;
-            sample_pt = &sample_buffer_2[0];
-            adc_data = &sample_buffer_1[0];
-        }
-        *start_time = to_ms_since_boot( get_absolute_time() );
-        dma_channel_start( ctrl_channel );
+    if (flag) {
+        flag = false;
+        sample_pt = &sample_buffer_1[0];
+        adc_data = &sample_buffer_2[0];
+    } else {
+        flag = true;
+        sample_pt = &sample_buffer_2[0];
+        adc_data = &sample_buffer_1[0];
+    }
+    *start_time = to_ms_since_boot( get_absolute_time() );
+    adc_select_input(FORK_ADC_CHAN);
+    dma_channel_start( ctrl_channel );
+
+    return adc_data;
 }
 
 

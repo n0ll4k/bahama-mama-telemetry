@@ -5,6 +5,7 @@
  * 2023
  */
 #include <stdint.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "pico/util/queue.h"
@@ -49,11 +50,9 @@ int64_t enable_button( alarm_id_t alarm_id, void * user_data );
 
 void core1_entry() 
 {   
-    int idx = 0;
-    int queue_lvl = 0;
-    uint32_t data[256];
     sd_card_t * storage;
-
+    queue_element_t element;
+    
     storage = sd_if_init();
     if ( NULL == storage ){
         return;
@@ -63,20 +62,18 @@ void core1_entry()
         switch( app_state ) {
             case state_start_file:
                 sd_if_open_new_file();
+                printf( "Start file.\n");
                 app_state = state_start;
                 break;
             case state_meas:
             case state_stop:
-                queue_lvl = queue_get_level(&core_queue);
-                if(  queue_lvl > QUEUE_WORK_LEVEL ) {
-                    for ( idx = 0; idx < queue_lvl; idx++ ) {
-                        queue_remove_blocking(&core_queue, (data+idx));
-                    }
-                    sd_if_write_to_file( (void*)data, (sizeof(uint32_t)*queue_lvl) );
+                while (queue_try_remove(&core_queue, &element)) {
+                    sd_if_write_to_file( &element, (sizeof(queue_element_t) ) );
                 }
                 break;
             case state_stop_file:
                 sd_if_close_file();
+                printf( "Stoping measurement.\n");
                 app_state = state_idle;
                 break;
             default:
@@ -102,10 +99,8 @@ int main() {
     
     init_buttons();
 
-    queue_init( &core_queue, sizeof(uint32_t), 256 );
+    queue_init( &core_queue, sizeof(queue_element_t), 1024 );
   
-    printf( "Welcome to BMT v%d.%d.%d\n", BMT_MAJOR, BMT_MINOR, BMT_BUGFIX );
-
     multicore_launch_core1(core1_entry);
 
     sleep_ms(2000);
@@ -113,12 +108,11 @@ int main() {
     /* Initialize data collection. */
     if ( 0 != data_collector_init( &core_queue ) ) {
         printf( "Error initializing data collection.\n");
-        return -1;
     }
 
     app_state = state_idle;
 
-    /* Grab data. */
+    /* Loop-Y-Loop */
     while (true) {
         switch( app_state ) {
             case state_meas:
@@ -127,10 +121,12 @@ int main() {
                 }
                 break;
             case state_stop:
+                //adc_collector_stop_adc();
                 data_collector_stop();
                 app_state = state_stop_file;
                 break;
             case state_start:
+                //adc_collector_start_adc();
                 data_collector_start();
                 app_state = state_meas;
                 break;
@@ -146,18 +142,21 @@ int main() {
 
 
 void button_cb( uint gpio_no, uint32_t events )
-{
+{   
     if ( buttton_pressed ) {
         cancel_alarm( alarm_id );
     } else {
+        printf( "button pressed.\n");
         buttton_pressed = true;
         switch( gpio_no ) {
             case BTN_START_STOP:
                 switch( app_state ) {
                     case state_idle:
+                        printf( "Start meas.\n");
                         app_state = state_start_file;
                         break;
                     case state_meas:
+                        printf( "Stop meas.\n");
                         app_state = state_stop;
                         break;
                     default:

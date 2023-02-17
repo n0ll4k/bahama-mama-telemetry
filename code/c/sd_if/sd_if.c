@@ -31,6 +31,7 @@ void sd_if_deinit( sd_card_t * sd_card )
 int sd_if_close_file( void ) 
 {
     FRESULT file_result = FR_OK;
+    f_sync( &current_file );
     
     file_result = f_close( &current_file );
     if ( FR_OK != file_result ) {
@@ -91,7 +92,7 @@ int sd_if_write_to_file( void * buffer, uint32_t buffer_length )
     if ( FR_OK != f_write( &current_file, buffer, buffer_length, &written_length) ) {
         written_length = -1;
     }
-    f_sync( &current_file );
+    //f_sync( &current_file );
 
     return written_length;
 }
