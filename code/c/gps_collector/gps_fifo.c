@@ -1,13 +1,9 @@
-/**
- * Simple C FIFO to buffer incoming GPS data.
- */
-
 #include "gps_fifo.h"
-
+/*--------------------------------------------------------------------------------*/
 uint8_t buffer[FIFO_SIZE];
 uint16_t head = 0;
 uint16_t tail = 0;
-
+/*--------------------------------------------------------------------------------*/
 void gps_fifo_push( uint8_t data )
 {
     buffer[head] = data;

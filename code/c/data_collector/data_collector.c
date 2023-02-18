@@ -1,27 +1,23 @@
-#include "data_collector.h"
-
+#include <string.h>
 #include "pico/stdlib.h"
+
+#include "data_collector.h"
 #include "../adc_collector/adc_collector.h"
 #include "../gps_collector/gps_collector.h"
-
-#include <stdio.h>
-#include <string.h>
-
+//---------------------------------------------------------------------------
 #define HEADER_OFF      1
 #define TIMESTAMP_OFF   1
 /* Data offset within travel data for MAX_BUFFER_SIZE. Header & timestamp.*/
 #define TRAVEL_DATA_OFF (HEADER_OFF+TIMESTAMP_OFF)
 /* As two samples are stored in 1 uint32_t we need only half the buffer. */
 #define BUFFERSIZE      ((NUM_SAMPLES/2)+TRAVEL_DATA_OFF)
-
 #define TRAVEL_ID       't'
 #define GPS_ID          'g'
 #define ACC_ID          'a'
 #define BRAKE_ID        'b'
 #define SPEED_ID        's'
-
 #define GPS_SAMPLES     256
-
+//---------------------------------------------------------------------------
 #pragma pack(2)
 typedef struct data_header_s {
     uint8_t data_type;
@@ -41,10 +37,6 @@ uint16_t adc_buffer[NUM_SAMPLES];
 queue_t * data_queue = NULL;
 uint32_t data_buffer[BUFFERSIZE];
 uint8_t gps_buf[GPS_SAMPLES];
-
-
-
-
 //---------------------------------------------------------------------------
 
 int data_collector_init( queue_t * queue )
@@ -62,17 +54,13 @@ int data_collector_init( queue_t * queue )
 
 void data_collector_start( void )
 {   
-    
     gps_collector_init();
-    
     adc_collector_start_adc();
-    printf(" Test4 ");
 }
 
 void data_collector_stop( void )
 {
     gps_collector_deinit();
-
     adc_collector_stop_adc();
 }
 
@@ -90,12 +78,10 @@ int data_collector_collect_and_push( void )
         .reserved = 0x00,
         .block_length = 0
     };
-    
 
     /* Wait for ADC data. */
     adc_data = adc_collector_wait_for_new_data( &timestamp );
     memcpy( adc_buffer, adc_data, sizeof(uint16_t)*NUM_SAMPLES );
-    //adc_collector_wait_for_new_data( adc_data, &timestamp );
     
     /* Build ADC data stream. */
     idx = 0;
@@ -105,23 +91,18 @@ int data_collector_collect_and_push( void )
         queue_add_blocking( data_queue, (uint32_t*)&header);    /* Add Header to stream. */
         queue_add_blocking( data_queue, &timestamp);            /* Add timestamp to stream. */
         for ( adc_idx = 0; idx < BUFFERSIZE, adc_idx < NUM_SAMPLES; idx++, adc_idx+=2 ) {
-        //for ( adc_idx = 0; adc_idx < NUM_SAMPLES; adc_idx+=2 ) {
             temp_var  = ((adc_buffer[adc_idx+1] << 16) & 0xFFFF0000);
             temp_var |= (adc_buffer[adc_idx] & 0x0000FFFF);
-            //travel_info.fork_data = adc_buffer[adc_idx];
-            //travel_info.shock_data = adc_buffer[adc_idx+1];
             queue_add_blocking(data_queue, &temp_var );
-
-            //printf( "%04x, %04x, %08x\n", adc_buffer[idx+1], adc_buffer[idx], temp_var );
         }
     }
 
-    
+    /* Check if new GPS data is available. */    
     gps_bytes = gps_collector_grab_data( gps_buf, GPS_SAMPLES );
     if ( gps_bytes > 0 ) {
         header.data_type =  GPS_ID;
         
-        // Length is given in 8-bit. GPS length always has to be a multiple of 4.
+        /* Length is given in 8-bit. GPS length always has to be a multiple of 4. */
         gps_remainder = gps_bytes % 4;
         if ( gps_remainder != 0 ) {
             header.block_length = ( gps_bytes - gps_remainder ) + 4;

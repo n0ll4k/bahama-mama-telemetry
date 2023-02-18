@@ -1,20 +1,16 @@
 #include <stdint.h>
-#include <stdio.h>
-
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 
 #include "adc_collector.h"
-
+/*--------------------------------------------------------------------------------*/
 #define FORK_SENSOR     26
-#define DAMPER_SENSOR   27
+#define SHOCK_SENSOR    27
 #define FORK_ADC_CHAN   0
-#define DAMPER_ADC_CHAN 1
-#define ADC_CHAN_MASK   ( 1 << FORK_ADC_CHAN ) | ( 1 << DAMPER_ADC_CHAN )
-
-
+#define SHOCK_ADC_CHAN  1
+#define ADC_CHAN_MASK   (( 1 << FORK_ADC_CHAN ) | ( 1 << SHOCK_ADC_CHAN ))
 /*--------------------------------------------------------------------------------*/
 bool flag;
 int sample_channel = 0;
@@ -24,26 +20,21 @@ uint16_t sample_buffer_2[NUM_SAMPLES];
 uint16_t * sample_pt = &sample_buffer_1[0];
 dma_channel_config adc_sample_cfg;
 dma_channel_config adc_ctrl_cfg;
-
+/*--------------------------------------------------------------------------------*/
 void adc_init_hw( void );
 int dma_init_adc_channels( void );
-
 /*--------------------------------------------------------------------------------*/
-
 uint16_t * adc_collector_init( void )
 {
     adc_init_hw();
 
     /* Initialize DMA channels for ADC */
     if ( -1 == dma_init_adc_channels() ) {
-        //printf( "Error initializing DMA channels for ADC.\n");
         return NULL;
     }
 
     return &sample_buffer_1[0];
 }
-
-
 
 void adc_collector_start_adc( void )
 {
@@ -78,16 +69,13 @@ uint16_t * adc_collector_wait_for_new_data( uint32_t * start_time )
 
     return adc_data;
 }
-
-
 /*--------------------------------------------------------------------------------*/
-
 void adc_init_hw( void )
 {
     adc_init();
 
     adc_gpio_init(FORK_SENSOR);
-    adc_gpio_init(DAMPER_SENSOR);
+    adc_gpio_init(SHOCK_SENSOR);
 
     adc_select_input(FORK_ADC_CHAN);
 
