@@ -71,7 +71,37 @@ class BmtVisualization:
         hist_plot.title = "{} Histogram".format(name)
 
         return hist_plot
+    
+    @staticmethod
+    def create_velocity_balance( travel_df ):
+        front_comp_df = travel_df[travel_df['front_speeds_mm_s'] > 0]
+        front_reb_df = travel_df[travel_df['front_speeds_mm_s'] < 0] 
+        rear_comp_df = travel_df[travel_df['rear_speeds_mm_s'] > 0]
+        rear_reb_df = travel_df[travel_df['rear_speeds_mm_s'] < 0]
 
+        front_comp_source = ColumnDataSource(front_comp_df)
+        rear_comp_source = ColumnDataSource(rear_comp_df)
+        front_reb_source = ColumnDataSource(front_reb_df)
+        rear_reb_source = ColumnDataSource(rear_reb_df)
+
+        comp_plot = figure( title='Compression velocity balance',
+                            width=400, 
+                            height=350, 
+                            toolbar_location=None )
+        reb_plot = figure( title='Rebound velocity balance',
+                           width=400, 
+                           height=350, 
+                           toolbar_location=None )
+        reb_plot.y_range.flipped = True
+
+        comp_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_comp_source, size=5, alpha=0.3, color='steelblue' )
+        comp_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_comp_source, size=5, alpha=0.3, color='green' )
+        reb_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_reb_source, size=5, alpha=0.3, color='steelblue' )
+        reb_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_reb_source, size=5, alpha=0.3, color='green' )
+
+        return comp_plot, reb_plot
+
+                        
 
     @staticmethod
     def present_data( travel_df, gps_df ):
@@ -82,10 +112,11 @@ class BmtVisualization:
         fork_hist = BmtVisualization.create_travel_histograms( travel_df, "fork" )
         shock_hist = BmtVisualization.create_travel_histograms( travel_df, "shock" )
         map = BmtVisualization.create_map( gps_df )
+        comp_vel, reb_vel = BmtVisualization.create_velocity_balance( travel_df )
 
         
         #layout = grid(row(column(travel_plot, row(fork_hist, shock_hist)), map))
-        layout = grid(row(column(travel_plot, row(fork_hist, shock_hist), sizing_mode='stretch_both'), map))
+        layout = grid(row(row(column(travel_plot, row(fork_hist, shock_hist), sizing_mode='stretch_both'), map), row(comp_vel, reb_vel)))
         show(layout)
     
     @staticmethod
