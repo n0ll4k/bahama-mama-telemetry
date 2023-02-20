@@ -17,3 +17,51 @@
     "frame_linkage_curve": "path_to_linkage_file"
 }
 @endjson
+
+@startjson Travel Leverage Ratio
+{
+    "leverage_ratio_curve":
+    [
+        {
+            "rear_wheel_mm": 0,
+            "leverage_ratio": 2.88
+        },
+        {
+            "rear_wheel_mm": 1,
+            "leverage_ratio": 2.88
+        },
+        {
+            "rear_wheel_mm": 10,
+            "leverage_ratio": 2.82
+        },
+        {
+            "rear_wheel_mm": 20,
+            "leverage_ratio": 2.76
+        }
+    ]
+}
+@endjson
+
+@startjson Travel Ratio
+{
+    "Travel_ratio_curve":
+    [
+        {
+            "rear_wheel_mm": 0,
+            "shock_mm": 0
+        },
+        {
+            "rear_wheel_mm": 1,
+            "shock_mm": 0.3
+        },
+        {
+            "rear_wheel_mm": 10,
+            "shock_mm": 3.5
+        },
+        {
+            "rear_wheel_mm": 20,
+            "shock_mm": 7.1
+        }
+    ]
+}
+@endjson
