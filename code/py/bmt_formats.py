@@ -61,7 +61,7 @@ class BmtBike:
         self._travel_fork_mm = 0
         self._travel_rear_mm = 0
         self._head_angle = 0.0
-        self._frame_linkage = list()
+        self._frame_linkage = ""
     
     def set_bike_id( self, bike_id ):
         self._bike_id = bike_id
@@ -78,8 +78,8 @@ class BmtBike:
     def set_head_angle( self, head_angle ):
         self._head_angle = head_angle
     
-    def set_framlinkage( self, linkage_data ):
-        self.set_framlinkage = linkage_data
+    def set_frame_linkage( self, linkage_data ):
+        self._frame_linkage = linkage_data
 
     def bike_id( self ):
         return self._bike_id

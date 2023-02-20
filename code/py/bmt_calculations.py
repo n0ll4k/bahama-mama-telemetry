@@ -51,11 +51,11 @@ class BmtLevRatioCalculations:
         return lev_df
     
     def shock_mm_to_rear_travel_mm( self, shock_mm : float ):
-        print( shock_mm )
         for index in range( 0, len(self._leverage_df)):
             if self._leverage_df.loc[index, 'calc_shock_mm'] > shock_mm:
                 break
-        index -= 1
+        if ( index > 0 ):
+            index -= 1
         rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(2)
 
         return rear_axle_mm
@@ -110,20 +110,23 @@ class BmtCalculations:
         # Tranform ADC values to mm.
         fork_calculator = BmtCalculationsAdc2Mm( setup.fork_sensor() )
         shock_calculator = BmtCalculationsAdc2Mm( setup.shock_sensor() )
+        rear_axle_calculator = BmtLevRatioCalculations( setup.bike().frame_linkage())
 
         travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
         travel_df['shock_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc), axis=1)
 
         # Calculate linear front end travel
-        travel_df['front_end_lin_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
-        # TODO calculate bike rear end linear travel
+        travel_df['front_axle_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
+        travel_df['rear_axle_mm'] = travel_df.apply( lambda row: rear_axle_calculator.shock_mm_to_rear_travel_mm(row.shock_mm), axis=1 )
 
         # Calculate tick differences
         travel_df['tick_diff'] = travel_df['int_timestamp'].diff()
         # Calculate front end speeds
-        travel_df['front_diff_mm'] = travel_df['front_end_lin_mm'].diff().round(1)
+        travel_df['front_diff_mm'] = travel_df['front_axle_mm'].diff().round(1)
         travel_df['front_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.front_diff_mm, row.tick_diff ), axis=1)
         # TODO Calculate read end speeds
+        travel_df['rear_diff_mm'] = travel_df['rear_axle_mm'].diff().round(1)
+        travel_df['rear_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.rear_diff_mm, row.tick_diff ), axis=1)
         
         return travel_df
 

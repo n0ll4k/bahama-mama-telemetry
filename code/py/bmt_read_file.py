@@ -153,17 +153,19 @@ if __name__ == "__main__":
     fork_sensor_dummy.set_range_mm( 200 )
 
     shock_sensor_dummy = BmtSensorCalibration()
-    shock_sensor_dummy.set_adc_value_zero( 25 ) 
+    shock_sensor_dummy.set_adc_value_zero( 22 ) 
     shock_sensor_dummy.set_adc_value_max( 4095 )
     shock_sensor_dummy.set_range_mm( 75 )
 
     dummy_bike = BmtBike()
     dummy_bike.set_head_angle( 64.0 )
+    dummy_bike.set_frame_linkage("/Users/n0ll4k/Documents/bmt_data/travel_data/Kavenz_VHP16.json")
 
     das_setup = BmtSetup()
     das_setup.set_fork_sensor( fork_sensor_dummy )
     das_setup.set_shock_sensor( shock_sensor_dummy )
     das_setup.set_bike( dummy_bike )
+
 
     BmtCalculations.transform_gps_data( gps_df )
     BmtCalculations.transform_travel_data( travel_df, das_setup )

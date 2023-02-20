@@ -37,8 +37,8 @@ class BmtVisualization:
                       height=350,
                       x_axis_label="Timestamp",
                       y_axis_label="Travel",)
-        travel_plot.line( x='int_timestamp', y='fork_mm', source=travel_source, legend_label='front', color='steelblue', line_width=2)
-        travel_plot.line( x='int_timestamp', y='shock_mm', source=travel_source, legend_label='rear', color='green', line_width=2)
+        travel_plot.line( x='int_timestamp', y='front_axle_mm', source=travel_source, legend_label='front', color='steelblue', line_width=2)
+        travel_plot.line( x='int_timestamp', y='rear_axle_mm', source=travel_source, legend_label='rear', color='green', line_width=2)
         return travel_plot
     
     @staticmethod 
@@ -47,12 +47,12 @@ class BmtVisualization:
                             height=350, 
                             toolbar_location=None )
         if damper == "fork":
-            column = "fork_mm"
-            name = "Fork"
+            column = "front_axle_mm"
+            name = "Front Axle"
             color="steelblue"
         elif damper == "shock":
-            column = "shock_mm"
-            name = "Shock"
+            column = "rear_axle_mm"
+            name = "Rear Axle"
             color="green"
         else:
             column = ""
