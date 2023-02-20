@@ -178,6 +178,8 @@ if __name__ == "__main__":
 
     dummy_bike = BmtBike()
     dummy_bike.set_head_angle( 64.0 )
+    dummy_bike.set_travel_rear_mm(160.0)
+    dummy_bike.set_travel_fork_mm(170.0)
     dummy_bike.set_frame_linkage("/Users/n0ll4k/Documents/bmt_data/travel_data/Kavenz_VHP16.json")
 
     das_setup = BmtSetup()

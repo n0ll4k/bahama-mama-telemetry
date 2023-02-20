@@ -16,6 +16,8 @@ class BmtCalculationsAdc2Mm:
         mm_val = adc_val * self._gradient + self._offset
         if self._sensor_info.flip_travel() == True:
             mm_val = self._sensor_info.range_mm() - mm_val
+        if( mm_val < 0 ):
+            mm_val = 0.0
         return round(mm_val, 1 )
 
 class BmtLevRatioCalculations:
@@ -114,6 +116,7 @@ class BmtCalculations:
         fork_calculator = BmtCalculationsAdc2Mm( setup.fork_sensor() )
         shock_calculator = BmtCalculationsAdc2Mm( setup.shock_sensor() )
         rear_axle_calculator = BmtLevRatioCalculations( setup.bike().frame_linkage())
+        front_linear_max_mm = setup.bike().travel_fork_mm() * math.sin(setup.bike().head_angle())
 
         travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
         travel_df['shock_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc), axis=1)
@@ -127,10 +130,15 @@ class BmtCalculations:
         # Calculate front end speeds
         travel_df['front_diff_mm'] = travel_df['front_axle_mm'].diff().round(1)
         travel_df['front_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.front_diff_mm, row.tick_diff ), axis=1)
-        # TODO Calculate read end speeds
+        # Calculate read end speeds
         travel_df['rear_diff_mm'] = travel_df['rear_axle_mm'].diff().round(1)
         travel_df['rear_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.rear_diff_mm, row.tick_diff ), axis=1)
+
+        # Calculate travel percentages
+        travel_df['front_percentage'] = travel_df.apply( lambda row: ((row.front_axle_mm/front_linear_max_mm)*100).round(1), axis=1)
+        travel_df['rear_percentage'] = travel_df.apply( lambda row: ((row.rear_axle_mm/setup.bike().travel_rear_mm())*100).round(1) ,axis=1)
         
+         
         return travel_df
 
 
