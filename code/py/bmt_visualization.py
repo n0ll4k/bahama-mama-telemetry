@@ -99,6 +99,8 @@ class BmtVisualization:
         reb_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_reb_source, size=5, alpha=0.3, color='steelblue' )
         reb_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_reb_source, size=5, alpha=0.3, color='green' )
 
+        #TODO Add line with median
+
         return comp_plot, reb_plot
 
                         
@@ -116,6 +118,7 @@ class BmtVisualization:
 
         
         #layout = grid(row(column(travel_plot, row(fork_hist, shock_hist)), map))
+        #TODO sort out layout
         layout = grid(row(row(column(travel_plot, row(fork_hist, shock_hist), sizing_mode='stretch_both'), map), row(comp_vel, reb_vel)))
         show(layout)
     
