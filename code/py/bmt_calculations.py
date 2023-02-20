@@ -1,5 +1,6 @@
 import math
 import pandas as pd
+import json
 from pyproj import Transformer
 from bmt_formats import BmtSetup, BmtBike, BmtSensorCalibration
 
@@ -13,6 +14,39 @@ class BmtCalculationsAdc2Mm:
     def adc2mm( self, adc_val ):
         mm_val = adc_val * self._gradient + self._offset
         return round(mm_val, 1 )
+
+class BmtLevRatioCalculations:
+    @staticmethod
+    def read_json( json_file ):
+        try:
+            with open( json_file ) as json_data:
+                data = json.load( json_data )
+        except:
+            print( "Error reading: {}".format( json_file ) )
+            return None
+        
+        return data
+
+    @staticmethod
+    def json_lev_to_travel_data( json_data ):
+        try:
+            lev_df = pd.DataFrame(json_data['leverage_ratio_curve'])
+        except KeyError:
+            print( "No valid leverage ratio data file given.")
+            return pd.DataFrame()
+        
+        lev_df['rear_wheel_diff_mm'] = lev_df['rear_wheel_mm'].diff().round(2)
+        lev_df.loc[0, 'shock_diff_mm'] = 0
+        for i in range(1, len(lev_df)):
+            lev_df.loc[i, 'shock_diff_mm'] = (lev_df.loc[i, 'rear_wheel_diff_mm'] /lev_df.loc[i-1, 'leverage_ratio']).round(2)
+        lev_df.loc[0, 'calc_shock_mm'] = 0
+        for i in range(1, len(lev_df)):
+            lev_df.loc[i, 'calc_shock_mm'] = lev_df.loc[i-1, 'calc_shock_mm'] + lev_df.loc[i, 'shock_diff_mm']
+        
+        print( lev_df )
+
+
+        
 
 class BmtCalculations:
     @staticmethod
@@ -78,10 +112,15 @@ class BmtCalculations:
         
         return travel_df
 
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="BMT related calculations")
+    parser.add_argument( "-j", "--json", dest="json_file", action="store", required=True, help="Path to json leverage ration file" )
+    args = parser.parse_args()
     
-
-
-
+    json_data = BmtLevRatioCalculations.read_json(args.json_file)
+    BmtLevRatioCalculations.json_lev_to_travel_data(json_data)
 
     
     
