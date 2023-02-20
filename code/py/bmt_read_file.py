@@ -2,6 +2,7 @@ import struct
 import os
 import pynmea2
 import datetime
+import json
 import bmt_formats as bmt_fmt
 import pandas as pd
 from bmt_calculations import BmtCalculations
@@ -18,7 +19,23 @@ class BmtLogReader:
         else:
             return raw_data
 
+    @staticmethod
+    def read_sensor_calib( json_path ):
+        try:
+            with open( json_path ) as file:
+                json_data = json.load(file)
+        except:
+            print( "Error reading sensor calibration data.")
+            return BmtSensorCalibration()
+        
+        sensor = BmtSensorCalibration()
+        sensor.set_sensor_name( json_data['sensor_name'])
+        sensor.set_adc_value_zero( json_data['adc_val_zero'])
+        sensor.set_adc_value_max( json_data['adc_val_max'])
+        sensor.set_range_mm( json_data['range_mm'])
+        sensor.flip_travel( json_data['flip_travel'])
 
+        return sensor
     
     @staticmethod
     def parse_file( file_path ):
@@ -151,11 +168,13 @@ if __name__ == "__main__":
     fork_sensor_dummy.set_adc_value_zero( 25 ) 
     fork_sensor_dummy.set_adc_value_max( 4095 )
     fork_sensor_dummy.set_range_mm( 200 )
+    fork_sensor_dummy.set_flip_travel(True)
 
     shock_sensor_dummy = BmtSensorCalibration()
     shock_sensor_dummy.set_adc_value_zero( 22 ) 
     shock_sensor_dummy.set_adc_value_max( 4095 )
     shock_sensor_dummy.set_range_mm( 75 )
+    shock_sensor_dummy.set_flip_travel(False)
 
     dummy_bike = BmtBike()
     dummy_bike.set_head_angle( 64.0 )

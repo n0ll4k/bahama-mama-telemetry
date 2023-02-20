@@ -3,7 +3,8 @@
     "sensor_name": "Dummy sensor fork",
     "adc_val_zero": 25,
     "adc_val_max": 4095,
-    "range_mm": 200
+    "range_mm": 200,
+    "flip_travel": false
 }
 @endjson
 

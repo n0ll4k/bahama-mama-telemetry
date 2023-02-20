@@ -23,6 +23,7 @@ class BmtSensorCalibration:
         self._adc_value_zero = 0
         self._adc_value_max = 0
         self._range_mm = 0
+        self._flip_travel = False
     
     def set_sensor_id( self, sensor_id ):
         self._sensor_id = sensor_id
@@ -39,6 +40,9 @@ class BmtSensorCalibration:
     def set_range_mm( self, range_mm ):
         self._range_mm = range_mm
 
+    def set_flip_travel( self, flip_travel ):
+        self._flip_travel = flip_travel
+
     def sensor_id( self ):
         return self._sensor_id
 
@@ -53,6 +57,9 @@ class BmtSensorCalibration:
 
     def range_mm( self ):
         return self._range_mm
+    
+    def flip_travel( self ):
+        return self._flip_travel
     
 class BmtBike:
     def __init__( self ):
