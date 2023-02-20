@@ -33,7 +33,7 @@ class BmtVisualization:
     def create_travel_plot( travel_df ):
         travel_source = ColumnDataSource(travel_df)
         travel_plot = figure(title="Plot responsive sizing example",
-                      width=1000,
+                      width=800,
                       height=350,
                       x_axis_label="Timestamp",
                       y_axis_label="Travel",)
@@ -43,7 +43,7 @@ class BmtVisualization:
     
     @staticmethod 
     def create_travel_histograms( travel_df, damper ):
-        hist_plot = figure( width=500, 
+        hist_plot = figure( width=400, 
                             height=350, 
                             toolbar_location=None )
         if damper == "fork":
