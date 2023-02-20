@@ -16,8 +16,10 @@ class BmtCalculationsAdc2Mm:
         return round(mm_val, 1 )
 
 class BmtLevRatioCalculations:
-    @staticmethod
-    def read_json( json_file ):
+    def __init__( self, json_path ):
+        self._leverage_df = self._json_lev_to_travel_data( json_path )
+    
+    def _read_json( self, json_file ):
         try:
             with open( json_file ) as json_data:
                 data = json.load( json_data )
@@ -27,8 +29,8 @@ class BmtLevRatioCalculations:
         
         return data
 
-    @staticmethod
-    def json_lev_to_travel_data( json_data ):
+    def _json_lev_to_travel_data( self, json_path ):
+        json_data = self._read_json( json_path )
         try:
             lev_df = pd.DataFrame(json_data['leverage_ratio_curve'])
         except KeyError:
@@ -42,11 +44,24 @@ class BmtLevRatioCalculations:
         lev_df.loc[0, 'calc_shock_mm'] = 0
         for i in range(1, len(lev_df)):
             lev_df.loc[i, 'calc_shock_mm'] = lev_df.loc[i-1, 'calc_shock_mm'] + lev_df.loc[i, 'shock_diff_mm']
-        
-        print( lev_df )
+        # Calulate offset for quicker calcultions afterwards
+        for i in range( 0, len(lev_df)):
+            lev_df.loc[i, 'calc_offset'] = (lev_df.loc[i, 'rear_wheel_mm'] - ( lev_df.loc[i, 'leverage_ratio']*lev_df.loc[i, 'calc_shock_mm'])).round(2)
 
+        return lev_df
+    
+    def shock_mm_to_rear_travel_mm( self, shock_mm : float ):
+        print( shock_mm )
+        for index in range( 0, len(self._leverage_df)):
+            if self._leverage_df.loc[index, 'calc_shock_mm'] > shock_mm:
+                break
+        index -= 1
+        rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(2)
 
-        
+        return rear_axle_mm
+    
+    def get_leverage_dataframe( self ):
+        return self._leverage_df
 
 class BmtCalculations:
     @staticmethod
@@ -119,8 +134,9 @@ if __name__ == "__main__":
     parser.add_argument( "-j", "--json", dest="json_file", action="store", required=True, help="Path to json leverage ration file" )
     args = parser.parse_args()
     
-    json_data = BmtLevRatioCalculations.read_json(args.json_file)
-    BmtLevRatioCalculations.json_lev_to_travel_data(json_data)
+    shock_calc = BmtLevRatioCalculations(args.json_file)
+    print( shock_calc.get_leverage_dataframe())
+    print( shock_calc.shock_mm_to_rear_travel_mm( 20 ) )
 
     
     
