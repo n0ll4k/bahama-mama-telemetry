@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import xyzservices.providers as xyz
-from bokeh.layouts import row, column, grid
+from bokeh.layouts import row, column, layout, grid
 from bokeh.io import curdoc
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource, Slope
@@ -142,10 +142,11 @@ class BmtVisualization:
         map = BmtVisualization.create_map( gps_df )
         comp_vel, reb_vel = BmtVisualization.create_velocity_balance( travel_df )
 
-        
-        #layout = grid(row(column(travel_plot, row(fork_hist, shock_hist)), map))
-        #TODO sort out layout
-        layout = grid(row(row(column(travel_plot, row(fork_hist, shock_hist), sizing_mode='stretch_both'), map), row(comp_vel, reb_vel)))
+        histogram_row = row( fork_hist, shock_hist)
+        velocity_row = row( comp_vel, reb_vel)
+        data_column = column( travel_plot, histogram_row, velocity_row)
+        layout = row( data_column, map, sizing_mode="stretch_both")
+    
         show(layout)
     
     @staticmethod
