@@ -3,8 +3,9 @@ import numpy as np
 import xyzservices.providers as xyz
 from bokeh.layouts import row, column, layout, grid
 from bokeh.io import curdoc
-from bokeh.plotting import figure, show
+from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, Slope
+from bokeh.models.annotations import Label, Span
 from bmt_calculations import BmtCalculations
 
 class BmtVisualization:
@@ -59,6 +60,9 @@ class BmtVisualization:
             name = ""
             return hist_plot        
         
+        avg_travel = (travel_df[column].mean()).round(2)
+        avg_txt = "Avg: {}mm".format(avg_travel)
+
         hist, edges = np.histogram(travel_df[column], density=True )
         hist_plot.quad( top=hist, 
                         bottom=0, 
@@ -66,6 +70,12 @@ class BmtVisualization:
                         right=edges[1:], 
                         fill_color=color,
                         line_color='gainsboro' )
+        span_avg = Span(location=avg_travel, dimension='height', line_color='grey', line_dash='dashed', line_width=1)
+
+        l_heigth = hist.max() - ( 0.05 * hist.max())
+        l_avg = Label(x=avg_travel, x_offset=5, y=l_heigth, text=avg_txt, text_color='grey', text_font_size='14px' )
+        hist_plot.add_layout(span_avg)
+        hist_plot.add_layout(l_avg)
         hist_plot.y_range.start = 0
         hist_plot.xaxis.axis_label = "Travel"
         hist_plot.title = "{} Histogram".format(name)
@@ -132,9 +142,10 @@ class BmtVisualization:
                         
 
     @staticmethod
-    def present_data( travel_df, gps_df ):
+    def present_data( travel_df, gps_df, export ):
         curdoc().theme = "dark_minimal"
 
+        output_file(filename=export, title="Bahama Mama Telemetrie")    
         travel_plot = BmtVisualization.create_travel_plot( travel_df )
 
         fork_hist = BmtVisualization.create_travel_histograms( travel_df, "fork" )
@@ -181,12 +192,16 @@ class BmtVisualization:
 
 if __name__ == "__main__":
     import argparse
+    import os
     parser = argparse.ArgumentParser(description="Visualizes BMT data files.")
     parser.add_argument( "-t", "--travel", dest="travel_file", action="store", required=True, help="Path to travel information file to be read." )
     parser.add_argument( "-g", "--gps", dest="gps_file", action="store", required=True, help="Path to gps information file to be read." )
     args = parser.parse_args()
     
     travel_df = BmtVisualization.open_travel_information( args.travel_file )
-    gps_df = BmtVisualization.open_travel_information( args.gps_file )
+    gps_df = BmtVisualization.open_gps_information( args.gps_file )
     
-    BmtVisualization.present_data( travel_df, gps_df )
+    export_file = "{}.html".format( os.path.basename(args.gps_file)[:-7])
+    export = os.path.abspath( os.path.join(os.path.dirname(args.gps_file), export_file ))
+
+    BmtVisualization.present_data( travel_df, gps_df, export )
