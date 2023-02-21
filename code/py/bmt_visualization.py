@@ -4,7 +4,7 @@ import xyzservices.providers as xyz
 from bokeh.layouts import row, column, grid
 from bokeh.io import curdoc
 from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Slope
 from bmt_calculations import BmtCalculations
 
 class BmtVisualization:
@@ -74,16 +74,37 @@ class BmtVisualization:
     
     @staticmethod
     def create_velocity_balance( travel_df ):
-        front_comp_df = travel_df[travel_df['front_speeds_mm_s'] > 0]
-        front_reb_df = travel_df[travel_df['front_speeds_mm_s'] < 0] 
-        rear_comp_df = travel_df[travel_df['rear_speeds_mm_s'] > 0]
-        rear_reb_df = travel_df[travel_df['rear_speeds_mm_s'] < 0]
+        # Grab specific data from travel date frame
+        front_comp_df = travel_df[travel_df['front_speeds_mm_s'] >= 0]
+        front_reb_df = travel_df[travel_df['front_speeds_mm_s'] <= 0] 
+        rear_comp_df = travel_df[travel_df['rear_speeds_mm_s'] >= 0]
+        rear_reb_df = travel_df[travel_df['rear_speeds_mm_s'] <= 0]
 
         front_comp_source = ColumnDataSource(front_comp_df)
         rear_comp_source = ColumnDataSource(rear_comp_df)
         front_reb_source = ColumnDataSource(front_reb_df)
         rear_reb_source = ColumnDataSource(rear_reb_df)
 
+        # Create regression lines
+        front_comp = np.polyfit( x=front_comp_df['front_percentage'], y=front_comp_df['front_speeds_mm_s'], deg=1, full=True)
+        fc_slope=front_comp[0][0]
+        fc_intercept=front_comp[0][1]
+        rear_comp = np.polyfit( x=rear_comp_df['rear_percentage'], y=rear_comp_df['rear_speeds_mm_s'], deg=1, full=True)
+        rc_slope=rear_comp[0][0]
+        rc_intercept=rear_comp[0][1]
+        front_reb = np.polyfit( x=front_reb_df['front_percentage'], y=front_reb_df['front_speeds_mm_s'], deg=1, full=True)
+        fr_slope=front_reb[0][0]
+        fr_intercept=front_reb[0][1]
+        rear_reb = np.polyfit( x=rear_reb_df['rear_percentage'], y=rear_reb_df['rear_speeds_mm_s'], deg=1, full=True)
+        rr_slope=rear_reb[0][0]
+        rr_intercept=rear_reb[0][1]
+
+        front_comp_reg_line = Slope(gradient=fc_slope, y_intercept=fc_intercept, line_color="steelblue", line_width=2)
+        rear_comp_reg_line = Slope(gradient=rc_slope, y_intercept=rc_intercept, line_color="green", line_width=2)
+        front_reb_reg_line = Slope(gradient=fr_slope, y_intercept=fr_intercept, line_color="steelblue", line_width=2)
+        rear_reb_reg_line = Slope(gradient=rr_slope, y_intercept=rr_intercept, line_color="green", line_width=2)
+        
+        # Create figures
         comp_plot = figure( title='Compression velocity balance',
                             width=400, 
                             height=350, 
@@ -94,12 +115,17 @@ class BmtVisualization:
                            toolbar_location=None )
         reb_plot.y_range.flipped = True
 
-        comp_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_comp_source, size=5, alpha=0.3, color='steelblue' )
-        comp_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_comp_source, size=5, alpha=0.3, color='green' )
-        reb_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_reb_source, size=5, alpha=0.3, color='steelblue' )
-        reb_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_reb_source, size=5, alpha=0.3, color='green' )
+        # Add scatter plots
+        comp_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_comp_source, size=3, alpha=0.3, color='steelblue' )
+        comp_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_comp_source, size=3, alpha=0.3, color='green' )
+        reb_plot.circle( x='front_percentage', y='front_speeds_mm_s', source=front_reb_source, size=3, alpha=0.3, color='steelblue' )
+        reb_plot.circle( x='rear_percentage', y='rear_speeds_mm_s', source=rear_reb_source, size=3, alpha=0.3, color='green' )
 
-        #TODO Add line with median
+        # Add regression lines
+        comp_plot.add_layout(front_comp_reg_line)
+        comp_plot.add_layout(rear_comp_reg_line)
+        reb_plot.add_layout(front_reb_reg_line)
+        reb_plot.add_layout(rear_reb_reg_line)
 
         return comp_plot, reb_plot
 
