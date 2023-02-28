@@ -27,7 +27,7 @@
 #define BTN_START_STOP      14
 #define BTN_WIFI            15
 #define QUEUE_WORK_LEVEL    24
-#define STATE_LED_PIN       10
+#define STATE_LED_PIN       13
 //---------------------------------------------------------------------------
 enum app_state_e {
     state_init = 0x00,

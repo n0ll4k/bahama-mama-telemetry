@@ -34,7 +34,7 @@ class BmtVisualization:
     def create_travel_plot( travel_df ):
         travel_source = ColumnDataSource(travel_df)
         travel_plot = figure(title="Plot responsive sizing example",
-                      width=800,
+                      width=1000,
                       height=350,
                       x_axis_label="Timestamp",
                       y_axis_label="Travel",)
@@ -44,7 +44,7 @@ class BmtVisualization:
     
     @staticmethod 
     def create_travel_histograms( travel_df, damper ):
-        hist_plot = figure( width=400, 
+        hist_plot = figure( width=500, 
                             height=350, 
                             toolbar_location=None )
         if damper == "fork":
@@ -116,11 +116,11 @@ class BmtVisualization:
         
         # Create figures
         comp_plot = figure( title='Compression velocity balance',
-                            width=400, 
+                            width=500, 
                             height=350, 
                             toolbar_location=None )
         reb_plot = figure( title='Rebound velocity balance',
-                           width=400, 
+                           width=500, 
                            height=350, 
                            toolbar_location=None )
         reb_plot.y_range.flipped = True
