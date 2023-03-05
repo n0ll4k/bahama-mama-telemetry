@@ -14,7 +14,6 @@ sd_card_t * sd_if_init( void )
 
     sd_card_t * sd_card = sd_get_by_num(0);
     FRESULT f_result = f_mount( &sd_card->fatfs, sd_card->pcName, 1 );
-
     if ( FR_OK != f_result ) {
         printf( "Error mounting: %s (%d)\n", FRESULT_str(f_result), f_result );
         return NULL;

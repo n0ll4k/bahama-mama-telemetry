@@ -21,13 +21,9 @@
 #include "adc_collector/adc_collector.h"
 #include "sd_if/sd_if.h"
 //---------------------------------------------------------------------------
-#define BMT_MAJOR           0
-#define BMT_MINOR           0
-#define BMT_BUGFIX          1
-#define BTN_START_STOP      14
-#define BTN_WIFI            15
-#define QUEUE_WORK_LEVEL    24
-#define STATE_LED_PIN       13
+#define BTN_START_STOP      21
+#define BTN_WIFI            20
+#define STATE_LED_PIN       22
 //---------------------------------------------------------------------------
 enum app_state_e {
     state_init = 0x00,
@@ -55,9 +51,6 @@ int64_t bttn_enable( alarm_id_t alarm_id, void * user_data );
 /* Core0 Handling. */
 int main() {
     stdio_init_all();
-    if (cyw43_arch_init()) {
-        return -1;
-    }
 
     gpio_init(STATE_LED_PIN);
     gpio_set_dir( STATE_LED_PIN, GPIO_OUT );
@@ -68,8 +61,11 @@ int main() {
   
     multicore_launch_core1(sd_handling_core1);
 
-    sleep_ms(2000);
-
+    sleep_ms(1000);
+    /* TODO: Why is Wifi Chip Init crashing? */
+    /* cyw43_arch_init();
+    printf( "Return Code CYW43: %d\n", ret ); */
+  
     /* Initialize data collection. */
     if ( 0 != data_collector_init( &core_queue ) ) {
         return -1;
