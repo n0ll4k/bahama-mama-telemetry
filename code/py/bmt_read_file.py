@@ -177,9 +177,11 @@ if __name__ == "__main__":
     shock_sensor_dummy.set_flip_travel(False)
 
     dummy_bike = BmtBike()
+    dummy_bike.set_bike_name( "Kavenz VHP16 Fred")
     dummy_bike.set_head_angle( 64.0 )
-    dummy_bike.set_travel_rear_mm(160.0)
-    dummy_bike.set_travel_fork_mm(170.0)
+    dummy_bike.set_travel_rear_mm(160)
+    dummy_bike.set_travel_fork_mm(170)
+    dummy_bike.set_travel_shock_mm(65)
     dummy_bike.set_frame_linkage("/Users/n0ll4k/Documents/bmt_data/travel_data/Kavenz_VHP16.json")
 
     das_setup = BmtSetup()

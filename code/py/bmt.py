@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, uic
 import sys
 from bmt_db import BmtDb
-from bmt_formats import BmtSensorCalibration
+from bmt_formats import BmtSensorCalibration, BmtBike
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -32,8 +32,17 @@ if __name__ == '__main__':
     shock_sensor_dummy.set_range_mm( 75 )
     shock_sensor_dummy.set_flip_travel(False)
 
+    dummy_bike = BmtBike()
+    dummy_bike.set_bike_name( "Kavenz VHP16 Fred")
+    dummy_bike.set_head_angle( 64.0 )
+    dummy_bike.set_travel_rear_mm(160)
+    dummy_bike.set_travel_fork_mm(170)
+    dummy_bike.set_travel_shock_mm(65)
+    dummy_bike.set_frame_linkage("/Users/n0ll4k/Documents/bmt_data/travel_data/Kavenz_VHP16.json")
+
     db = BmtDb( r"test.db")
     db.create_tables()
     db.add_sensor( fork_sensor_dummy )
     db.add_sensor( shock_sensor_dummy )
+    db.add_bike( dummy_bike )
     

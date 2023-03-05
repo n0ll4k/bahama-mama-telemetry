@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from bmt_formats import BmtSensorCalibration
+from bmt_formats import BmtSensorCalibration, BmtBike
 
 class BmtDb:
     def __init__(self, path ):
@@ -41,16 +41,16 @@ class BmtDb:
 
         sql_create_bikes_table = """ CREATE TABLE IF NOT EXISTS bikes (
                                         bike_id integer PRIMARY KEY,
-                                        bike_name text NOT NULL,
+                                        bike_name text UNIQUE NOT NULL,
                                         travel_fork_mm integer NOT NULL,
                                         travel_shock_mm integer NOT NULL,
                                         travel_rear_mm integer NOT NULL,
                                         head_angle_degree float NOT_NULL,
-                                        frame_linkage integer NOT_NULL );"""
+                                        frame_linkage text NOT_NULL );"""
 
         sql_create_sensors_table = """ CREATE TABLE IF NOT EXISTS sensors (
                                         sensor_id integer PRIMARY KEY,
-                                        sensor_name text NOT NULL,
+                                        sensor_name text UNIQUE NOT NULL,
                                         adc_value_min integer NOT NULL,
                                         adc_value_max integer NOT NULL,
                                         range_mm integer NOT NULL,
@@ -58,7 +58,7 @@ class BmtDb:
         
         sql_create_setups_table = """ CREATE TABLE IF NOT EXISTS setups (
                                         setup_id integer PRIMARY KEY,
-                                        setup_name text NOT NULL,
+                                        setup_name text UNIQUE NOT NULL,
                                         fork_sensor_id integer NOT NULL,
                                         shock_sensor_id integer NOT NULL,
                                         bike_id integer NOT NULL,
@@ -95,7 +95,7 @@ class BmtDb:
         Add a new sensor to the database.
         :param self: Pointer to object
         :param sensor: Sensor object to add to sensor table
-        :return:
+        :return: 0 on success, -1 on error
         """
         sql_add_sensor = """ INSERT INTO sensors(sensor_name, adc_value_min, adc_value_max, range_mm, flipped)
                                 VALUES ( '{name}', {adc_min}, {adc_max}, {range_mm}, {flipped} );""".format(
@@ -110,5 +110,31 @@ class BmtDb:
             self.__db_conn.commit()
         except Error as db_err:
             print( "Error creating sensor: {}".format( db_err ))
+            return -1
+        return 0
+    
+    def add_bike( self, bike: BmtBike ):
+        """
+        Add a new bike to the database.
+        :param self: Pointer to object
+        :param bike: Bike object to add to bike table
+        :return: 0 on success, -1 on error
+        """
+        sql_add_bike = """ INSERT INTO bikes(bike_name, travel_fork_mm, travel_shock_mm, travel_rear_mm, head_angle_degree, frame_linkage)
+                            VALUES ( '{name}', {travel_fork}, {travel_shock}, {travel_rear}, {head_angle}, '{linkage_file}' );""".format(
+                                name=bike.bike_name(),
+                                travel_fork=bike.travel_fork_mm(),
+                                travel_shock=bike.travel_shock_mm(),
+                                travel_rear=bike.travel_rear_mm(),
+                                head_angle=bike.head_angle(),
+                                linkage_file=bike.frame_linkage() )
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_add_bike )
+            self.__db_conn.commit()
+        except Error as db_err:
+            print( "Error creating bike: {}".format( db_err ))        
+            return -1
+        return 0
 
         
