@@ -14,3 +14,7 @@ __pycache__/
 
 # Visualized data
 *.html
+
+# Databases
+*.db
+*.sqlite
