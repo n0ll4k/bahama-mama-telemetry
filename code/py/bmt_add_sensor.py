@@ -10,6 +10,6 @@ class AddSensorUi(QWidget):
         self.db = db
         uic.loadUi('ui_files/add_sensor.ui', self)
 
-    def QuitUi(self):
+    def closeEvent(self, event):
         self.Parent.add_sensor_open = False
         self.close()
