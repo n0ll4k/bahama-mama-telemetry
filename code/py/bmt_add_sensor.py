@@ -8,7 +8,7 @@ class AddSensorUi(QWidget):
         QWidget.__init__(self)
         self.Parent = parent
         self.db = db
-        uic.loadUi('add_sensor.ui', self)
+        uic.loadUi('ui_files/add_sensor.ui', self)
 
     def QuitUi(self):
         self.Parent.add_sensor_open = False

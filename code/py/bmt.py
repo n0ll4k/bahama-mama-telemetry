@@ -7,7 +7,7 @@ from bmt_add_sensor import AddSensorUi
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__() # Call the inherited classes __init__ method
-        uic.loadUi('bmt.ui', self) # Load the .ui file
+        uic.loadUi('ui_files/bmt.ui', self) # Load the .ui file
         self.add_sensor_open = False
 
         # Link Buttons to callback functions.
@@ -27,12 +27,9 @@ class Ui(QtWidgets.QMainWindow):
         print( "Add new Bike.")
 
     def addSensor_cb(self):
-        print( "Add new Sensor.")
         if not self.add_sensor_open:
             self.add_sensor_open = True
-            # Instantiate the 2nd Window Class
-            self.AddSensor = AddSensorUi(self)
-            # Now Show it
+            self.AddSensor = AddSensorUi(self, self.db)
             self.AddSensor.show()
 
     def oldSession_cb(self):
