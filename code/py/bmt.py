@@ -2,13 +2,47 @@ from PyQt5 import QtWidgets, uic
 import sys
 from bmt_db import BmtDb
 from bmt_formats import BmtSensorCalibration, BmtBike
+from bmt_add_sensor import AddSensorUi
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__() # Call the inherited classes __init__ method
         uic.loadUi('bmt.ui', self) # Load the .ui file
+        self.add_sensor_open = False
+
+        # Link Buttons to callback functions.
+        self.addBike_bttn.clicked.connect(self.addBike_cb)
+        self.addSensor_bttn.clicked.connect(self.addSensor_cb)
+        self.newSetup_bttn.clicked.connect(self.newSetup_cb)
+        self.newSession_bttn.clicked.connect(self.newSession_cb)
+        self.oldSession_bttn.clicked.connect(self.oldSession_cb)
+
+        # Create database connection.
+        self.db = BmtDb( r"test.db")
+        self.db.create_tables()
+
         self.show() # Show the GUI
 
+    def addBike_cb(self):
+        print( "Add new Bike.")
+
+    def addSensor_cb(self):
+        print( "Add new Sensor.")
+        if not self.add_sensor_open:
+            self.add_sensor_open = True
+            # Instantiate the 2nd Window Class
+            self.AddSensor = AddSensorUi(self)
+            # Now Show it
+            self.AddSensor.show()
+
+    def oldSession_cb(self):
+        print( "Load old Session.")
+
+    def newSession_cb(self):
+        print( "Create new Session.")
+    
+    def newSetup_cb(self):
+        print( "Create new Setup.")
 
 def show_ui():
     app = QtWidgets.QApplication(sys.argv)
@@ -16,8 +50,11 @@ def show_ui():
     app.exec_()
 
 
+
+
 if __name__ == '__main__':
-    #show_ui()
+    show_ui()
+    '''
     fork_sensor_dummy = BmtSensorCalibration()
     fork_sensor_dummy.set_sensor_name( "Fork Dummy")
     fork_sensor_dummy.set_adc_value_zero( 25 ) 
@@ -45,4 +82,4 @@ if __name__ == '__main__':
     db.add_sensor( fork_sensor_dummy )
     db.add_sensor( shock_sensor_dummy )
     db.add_bike( dummy_bike )
-    
+    '''
