@@ -3,12 +3,14 @@ import sys
 from bmt_db import BmtDb
 from bmt_formats import BmtSensorCalibration, BmtBike
 from bmt_add_sensor import AddSensorUi
+from bmt_add_bike import AddBikeUi
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__() # Call the inherited classes __init__ method
         uic.loadUi('ui_files/bmt.ui', self) # Load the .ui file
         self.add_sensor_open = False
+        self.add_bike_open = False
 
         # Link Buttons to callback functions.
         self.addBike_bttn.clicked.connect(self.addBike_cb)
@@ -24,7 +26,10 @@ class Ui(QtWidgets.QMainWindow):
         self.show() # Show the GUI
 
     def addBike_cb(self):
-        print( "Add new Bike.")
+        if not self.add_bike_open:
+            self.add_bike_open = True
+            self.AddBike = AddBikeUi(self, self.db)
+            self.AddBike.show()
 
     def addSensor_cb(self):
         if not self.add_sensor_open:
