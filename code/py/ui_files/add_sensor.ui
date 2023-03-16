@@ -39,7 +39,7 @@
     <string>Save</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="sensor_name">
    <property name="geometry">
     <rect>
      <x>150</x>
@@ -49,7 +49,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinBox">
+  <widget class="QSpinBox" name="adcMin_val">
    <property name="geometry">
     <rect>
      <x>150</x>
@@ -59,7 +59,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinBox_2">
+  <widget class="QSpinBox" name="adcMax_val">
    <property name="geometry">
     <rect>
      <x>150</x>
@@ -69,7 +69,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinBox_3">
+  <widget class="QSpinBox" name="range_val">
    <property name="geometry">
     <rect>
      <x>150</x>
