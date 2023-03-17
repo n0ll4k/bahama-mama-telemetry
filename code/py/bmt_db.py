@@ -109,9 +109,8 @@ class BmtDb:
             cursor.execute( sql_add_sensor )
             self.__db_conn.commit()
         except Error as db_err:
-            print( "Error creating sensor: {}".format( db_err ))
-            return -1
-        return 0
+            return ( -1, f"Error creating sensor: {db_err}" )
+        return ( 0, "")
     
     def add_bike( self, bike: BmtBike ):
         """
@@ -133,8 +132,7 @@ class BmtDb:
             cursor.execute( sql_add_bike )
             self.__db_conn.commit()
         except Error as db_err:
-            print( "Error creating bike: {}".format( db_err ))        
-            return -1
-        return 0
+            return ( -1, f"Error creating bike: {db_err}" )
+        return ( 0, "")
 
         
