@@ -67,7 +67,7 @@ class BmtBike:
         self._bike_name = ""
         self._travel_fork_mm = 0
         self._travel_shock_mm = 0
-        self._travel_rear_mm = 0
+        self._travel_rear_axle_mm = 0
         self._head_angle = 0.0
         self._frame_linkage = ""
     
@@ -83,8 +83,8 @@ class BmtBike:
     def set_travel_shock_mm( self, shock_travel_mm):
         self._travel_shock_mm = shock_travel_mm
 
-    def set_travel_rear_mm( self, travel_rear_mm ):
-        self._travel_rear_mm = travel_rear_mm
+    def set_travel_rear_mm( self, travel_rear_axle_mm ):
+        self._travel_rear_axle_mm = travel_rear_axle_mm
     
     def set_head_angle( self, head_angle ):
         self._head_angle = head_angle
@@ -104,8 +104,8 @@ class BmtBike:
     def travel_shock_mm( self ):
         return self._travel_shock_mm
     
-    def travel_rear_mm( self ):
-        return self._travel_rear_mm
+    def travel_rear_axle_mm( self ):
+        return self._travel_rear_axle_mm
     
     def head_angle( self ):
         return self._head_angle
