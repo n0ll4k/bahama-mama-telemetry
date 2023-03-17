@@ -53,7 +53,6 @@ class AddSensorUi(QWidget):
 
 
     def load_json_cb(self):
-        print( "Loading JSON.")
         filename = QFileDialog.getOpenFileName(self,
                                                "Open Sensor JSON File", 
                                                "JSON Files (*.json)")
