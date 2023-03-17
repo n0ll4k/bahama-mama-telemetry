@@ -83,7 +83,7 @@ class BmtBike:
     def set_travel_shock_mm( self, shock_travel_mm):
         self._travel_shock_mm = shock_travel_mm
 
-    def set_travel_rear_mm( self, travel_rear_axle_mm ):
+    def set_travel_rear_axle_mm( self, travel_rear_axle_mm ):
         self._travel_rear_axle_mm = travel_rear_axle_mm
     
     def set_head_angle( self, head_angle ):

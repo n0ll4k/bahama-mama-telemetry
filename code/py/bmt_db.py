@@ -125,7 +125,7 @@ class BmtDb:
                                 name=bike.bike_name(),
                                 travel_fork=bike.travel_fork_mm(),
                                 travel_shock=bike.travel_shock_mm(),
-                                travel_rear=bike.travel_rear_mm(),
+                                travel_rear=bike.travel_rear_axle_mm(),
                                 head_angle=bike.head_angle(),
                                 linkage_file=bike.frame_linkage() )
         try:
