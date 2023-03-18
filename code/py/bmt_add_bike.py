@@ -10,10 +10,9 @@ from bmt_formats import BmtBike
 import os.path as path
 
 class AddBikeUi(QWidget):
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         QWidget.__init__(self)
         self.Parent = parent
-        self.db = db
         uic.loadUi('ui_files/add_bike.ui', self)
 
         # Link buttons to callback functions
@@ -52,7 +51,7 @@ class AddBikeUi(QWidget):
         if not path.isfile(bike.frame_linkage()):
             self.show_error("Please set a valid linkage file path.")
             return
-        return_value = self.db.add_bike( bike )
+        return_value = self.Parent.db.add_bike( bike )
         if return_value[0] == -1:
             self.show_error( return_value[1] )
             return

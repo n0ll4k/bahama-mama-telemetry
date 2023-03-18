@@ -8,10 +8,9 @@ import json
 from bmt_formats import BmtSensorCalibration
 
 class AddSensorUi(QWidget):
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         QWidget.__init__(self)
         self.Parent = parent
-        self.db = db
         uic.loadUi('ui_files/add_sensor.ui', self)
         
         # Link buttons to callback functions
@@ -38,7 +37,7 @@ class AddSensorUi(QWidget):
             self.show_error("Please set a sensor range larger 0mm.")
             return
         sensor.set_flip_travel( self.flip_travel_check.isChecked())
-        return_value = self.db.add_sensor( sensor)
+        return_value = self.Parent.db.add_sensor( sensor)
         if return_value[0] == -1:
             self.show_error( return_value[1] )
             return

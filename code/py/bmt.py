@@ -28,13 +28,13 @@ class Ui(QtWidgets.QMainWindow):
     def addBike_cb(self):
         if not self.add_bike_open:
             self.add_bike_open = True
-            self.AddBike = AddBikeUi(self, self.db)
+            self.AddBike = AddBikeUi(self)
             self.AddBike.show()
 
     def addSensor_cb(self):
         if not self.add_sensor_open:
             self.add_sensor_open = True
-            self.AddSensor = AddSensorUi(self, self.db)
+            self.AddSensor = AddSensorUi(self )
             self.AddSensor.show()
 
     def oldSession_cb(self):
@@ -45,6 +45,9 @@ class Ui(QtWidgets.QMainWindow):
     
     def newSetup_cb(self):
         print( "Create new Setup.")
+        sensors = self.db.get_sensor_list()
+        for sensor in sensors:
+            print( sensor )
 
 def show_ui():
     app = QtWidgets.QApplication(sys.argv)
