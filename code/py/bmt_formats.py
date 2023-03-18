@@ -116,9 +116,16 @@ class BmtBike:
 class BmtSetup:
     def __init__( self ):
         self._setup_id = 0
+        self._setup_name = ""
         self._fork_sensor = BmtSensorCalibration()
         self._shock_sensor = BmtSensorCalibration()
         self._bike = BmtBike()
+
+    def set_setup_id(self, setup_id):
+        self._setup_id = setup_id
+    
+    def set_setup_name(self, setup_name):
+        self._setup_name = setup_name
     
     def set_fork_sensor( self, fork_sensor ):
         self._fork_sensor = fork_sensor
@@ -129,6 +136,12 @@ class BmtSetup:
     def set_bike( self, bike ):
         self._bike = bike
 
+    def setup_id(self):
+        return self._setup_id
+    
+    def setup_name(self):
+        return self._setup_name
+    
     def fork_sensor( self ):
         return self._fork_sensor
     
