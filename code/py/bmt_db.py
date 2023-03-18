@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from bmt_formats import BmtSensorCalibration, BmtBike
+from bmt_formats import BmtSensorCalibration, BmtBike, BmtSetup
 
 class BmtDb:
     def __init__(self, path ):
@@ -130,6 +130,61 @@ class BmtDb:
         try:
             cursor = self.__db_conn.cursor()
             cursor.execute( sql_add_bike )
+            self.__db_conn.commit()
+        except Error as db_err:
+            return ( -1, f"Error creating bike: {db_err}" )
+        return ( 0, "")
+
+    def get_sensor_list( self ):
+        """
+        Read a sensor list from the database.
+        :param self: Pointer to object
+        :return: Tuple: (list(), err_msg)
+        """
+        sql_get_sensors = """SELECT sensor_id, sensor_name from sensors
+                             ORDER BY sensor_id;"""
+
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_get_sensors )
+            rows = cursor.fetchall()
+        except Error as db_err:
+            return ( list(), f"Error reading sensor list: {db_err}")
+        
+        return ( rows, "" )
+    
+    def get_bike_list( self ):
+        """
+        Read a bike list from the database.
+        :param self: Pointer to object
+        :return: Tuple: (list(), err_msg)
+        """
+        sql_get_sensors = """SELECT bike_id, bike_name from bikes
+                             ORDER BY bike_id;"""
+
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_get_sensors )
+            rows = cursor.fetchall()
+        except Error as db_err:
+            return ( list(), f"Error reading sensor list: {db_err}")
+        
+        return ( rows, "" )
+
+    def add_setup(self, name, bike_id, fork_id, shock_id ):
+        """
+        Add a setup to the db.
+        :param self: Pointer to object
+        :param bike_id: bike_id from bikes
+        :param front_id: sensor_id from sensors
+        :param read_id: sensor_id from sensors
+        :return: 0 on success, -1 on error
+        """
+        sql_add_setup = f""" INSERT INTO setups(setup_name, fork_sensor_id, shock_sensor_id, bike_id)
+                            VALUES ( '{name}', {fork_id}, {shock_id}, {bike_id} );"""
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_add_setup )
             self.__db_conn.commit()
         except Error as db_err:
             return ( -1, f"Error creating bike: {db_err}" )

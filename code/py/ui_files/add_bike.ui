@@ -81,6 +81,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="maximum">
+    <number>210</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="shock_travel">
    <property name="geometry">
@@ -91,6 +94,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="maximum">
+    <number>80</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="frame_travel">
    <property name="geometry">
@@ -100,6 +106,9 @@
      <width>70</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="maximum">
+    <number>220</number>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="head_angle">

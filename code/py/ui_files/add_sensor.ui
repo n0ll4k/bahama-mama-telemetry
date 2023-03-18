@@ -58,6 +58,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="maximum">
+    <number>4095</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="adcMax_val">
    <property name="geometry">
@@ -68,6 +71,9 @@
      <height>24</height>
     </rect>
    </property>
+   <property name="maximum">
+    <number>4095</number>
+   </property>
   </widget>
   <widget class="QSpinBox" name="range_val">
    <property name="geometry">
@@ -77,6 +83,9 @@
      <width>70</width>
      <height>24</height>
     </rect>
+   </property>
+   <property name="maximum">
+    <number>210</number>
    </property>
   </widget>
   <widget class="QCheckBox" name="flip_travel_check">
