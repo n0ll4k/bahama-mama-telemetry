@@ -5,6 +5,7 @@ from bmt_formats import BmtSensorCalibration, BmtBike
 from bmt_add_sensor import AddSensorUi
 from bmt_add_bike import AddBikeUi
 from bmt_add_setup import AddSetup
+from bmt_add_session import AddSessionUi
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -13,6 +14,7 @@ class Ui(QtWidgets.QMainWindow):
         self.add_sensor_open = False
         self.add_bike_open = False
         self.create_setup_open = False
+        self.add_session_open = False
 
         # Link Buttons to callback functions.
         self.addBike_bttn.clicked.connect(self.addBike_cb)
@@ -43,7 +45,10 @@ class Ui(QtWidgets.QMainWindow):
         print( "Load old Session.")
 
     def newSession_cb(self):
-        print( "Create new Session.")
+        if not self.add_session_open:
+            self.add_session_open = True
+            self.AddSession = AddSessionUi(self)
+            self.AddSession.show()
     
     def newSetup_cb(self):
         if not self.create_setup_open:

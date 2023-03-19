@@ -190,4 +190,22 @@ class BmtDb:
             return ( -1, f"Error creating bike: {db_err}" )
         return ( 0, "")
 
+    def get_setup_list(self):
+        """
+        Read a setup list from the database.
+        :param self: Pointer to object
+        :return: Tuple: (list(), err_msg)
+        """
+        sql_get_sensors = """SELECT setup_id, setup_name from setups
+                             ORDER BY setup_id;"""
+
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_get_sensors )
+            rows = cursor.fetchall()
+        except Error as db_err:
+            return ( list(), f"Error reading sensor list: {db_err}")
+        
+        return ( rows, "" )
+
         
