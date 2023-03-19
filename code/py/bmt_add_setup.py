@@ -2,8 +2,6 @@
 from PyQt5.QtWidgets import QWidget, QMessageBox
 # PyQt uic
 from PyQt5 import uic
-# Setup format
-from bmt_formats import BmtSetup
 
 class AddSetup(QWidget):
     def __init__(self, parent):
