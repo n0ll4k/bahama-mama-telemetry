@@ -82,8 +82,6 @@ class AddBikeUi(QWidget):
             linkage_data = self.load_json_file(filename[0])
             if linkage_data is not None:
                 self.linkage_path.setText(filename[0])
-            
-            
         except:
             self.show_error(f"Please select a correct json file.\n")
 
