@@ -8,6 +8,8 @@ from PyQt5.QtCore import QDateTime
 import os.path as path
 # Data parser
 from bmt_read_file import BmtLogReader
+# Visualization
+from bmt_visualization import BmtVisualization
 
 
 class AddSessionUi(QWidget):
@@ -41,16 +43,34 @@ class AddSessionUi(QWidget):
         # Check if data file is selected.
         if not path.isfile(self.data_file.text()):
             self.show_error( "Please select a valid data file.")
-        # TODO Get Setup from database.
+        # Get Setup from database.
         setup_name = self.setup_list_widget.currentItem().text()
         setup = self.Parent.db.get_setup(self.get_setup_id_by_name(setup_name))
         if setup[0] is None:
             self.show_error( setup[1])
-        # Process Data.
+        # Read Data.
         data_paths = BmtLogReader.process_data( self.data_file.text(), setup[0] )
         print(data_paths)
         
         # TODO Add data/filepaths to database.
+        return_value = self.Parent.db.add_session(session_name, 
+                                                  self.date_time.dateTime().toString("dd.MM.yyyy HH:mm:ss"), 
+                                                  self.get_setup_id_by_name(setup_name), 
+                                                  data_paths[0],
+                                                  data_paths[1] )
+        if return_value[0] != 0:
+            self.show_error(return_value[1])
+            return
+        else:
+            travel_df = BmtVisualization.open_travel_information( data_paths[0] )
+            gps_df = BmtVisualization.open_gps_information( data_paths[1])
+    
+            export_file = "{}.html".format( path.basename(data_paths[1])[:-7])
+            export = path.abspath( path.join(path.dirname(data_paths[1]), export_file ))
+
+            BmtVisualization.present_data( travel_df, gps_df, export )
+            self.close()
+            
 
     def select_data_cb(self):
         filename = QFileDialog.getOpenFileName(self,

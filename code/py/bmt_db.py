@@ -134,6 +134,27 @@ class BmtDb:
         except Error as db_err:
             return ( -1, f"Error creating bike: {db_err}" )
         return ( 0, "")
+    
+    def add_session( self, session_name, session_datetime, setup_id, travel_data, gps_data ):
+        """
+        Add a new bike to the database.
+        :param self: Pointer to object
+        :param session_name: name of the session to save
+        :param session_datetime: Date and Time of session
+        :param setup_id: setup_id of session
+        :param travel_data: Path to travel data file
+        :param gps_data: Path to GPS data file
+        :return: 0 on success, -1 on error
+        """
+        sql_add_session = f"""INSERT INTO sessions(session_name, session_datetime, setup_id, travel_data, gps_data)
+                            VALUES ( '{session_name}', '{session_datetime}', {setup_id}, '{travel_data}', '{gps_data}' );"""
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_add_session)
+            self.__db_conn.commit()
+        except Error as db_err:
+            return ( -1, f"Error creating bike: {db_err}" )
+        return ( 0, "")
 
     def get_sensor_list( self ):
         """
