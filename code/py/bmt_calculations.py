@@ -136,7 +136,7 @@ class BmtCalculations:
 
         # Calculate travel percentages
         travel_df['front_percentage'] = travel_df.apply( lambda row: ((row.front_axle_mm/front_linear_max_mm)*100).round(1), axis=1)
-        travel_df['rear_percentage'] = travel_df.apply( lambda row: ((row.rear_axle_mm/setup.bike().travel_rear_mm())*100).round(1) ,axis=1)
+        travel_df['rear_percentage'] = travel_df.apply( lambda row: ((row.rear_axle_mm/setup.bike().travel_rear_axle_mm())*100).round(1) ,axis=1)
         
          
         return travel_df

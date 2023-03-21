@@ -20,6 +20,31 @@ class BmtLogReader:
             return raw_data
 
     @staticmethod
+    def process_data(file_path, setup: bmt_fmt.BmtSetup):
+        travel_df, gps_df = BmtLogReader.parse_file(file_path)
+
+        BmtCalculations.transform_gps_data( gps_df )
+        BmtCalculations.transform_travel_data( travel_df, setup )
+        
+        try:
+            base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), 
+                                            datetime.date.strftime(gps_df.loc[0]['date'], "%Y-%m-%d"), 
+                                            datetime.time.strftime(gps_df.loc[0]['timestamp'], "%H-%M-%S") )
+        except:
+            base_filename = "{}_".format(os.path.basename(file_path[:-4]))
+        gps_filename = "{}GPS.csv".format(base_filename)
+        travel_filename = "{}TRAVEL.csv".format(base_filename)
+        gps_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), gps_filename )
+        travel_path = os.path.join( os.path.abspath(os.path.dirname(file_path)), travel_filename )
+
+        
+        gps_df.to_csv(gps_path)
+        travel_df.to_csv(travel_path)
+        return (travel_path, gps_path)
+
+
+
+    @staticmethod
     def read_sensor_calib( json_path ):
         try:
             with open( json_path ) as file:
@@ -161,8 +186,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Reads BMT files.")
     parser.add_argument( "-f", "--file", dest="file", action="store", required=True, help="Path to file to be read." )
     args = parser.parse_args()
-    
-    travel_df, gps_df = BmtLogReader.parse_file( args.file )
 
     fork_sensor_dummy = BmtSensorCalibration()
     fork_sensor_dummy.set_adc_value_zero( 25 ) 
@@ -189,22 +212,5 @@ if __name__ == "__main__":
     das_setup.set_shock_sensor( shock_sensor_dummy )
     das_setup.set_bike( dummy_bike )
 
-
-    BmtCalculations.transform_gps_data( gps_df )
-    BmtCalculations.transform_travel_data( travel_df, das_setup )
-    
-    try:
-        base_filename = "{}-{}_{}_".format(os.path.basename(args.file[:-4]), 
-                                           datetime.date.strftime(gps_df.loc[0]['date'], "%Y-%m-%d"), 
-                                           datetime.time.strftime(gps_df.loc[0]['timestamp'], "%H-%M-%S") )
-    except:
-        base_filename = "{}_".format(os.path.basename(args.file[:-4]))
-    gps_filename = "{}GPS.csv".format(base_filename)
-    travel_filename = "{}TRAVEL.csv".format(base_filename)
-    gps_path = os.path.join( os.path.abspath(os.path.dirname(args.file)), gps_filename )
-    travel_path = os.path.join( os.path.abspath(os.path.dirname(args.file)), travel_filename )
-
-    
-    gps_df.to_csv(gps_path)
-    travel_df.to_csv(travel_path)
+    BmtLogReader.process_data(args.file, das_setup)
     

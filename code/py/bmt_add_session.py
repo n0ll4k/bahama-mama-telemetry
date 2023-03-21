@@ -6,6 +6,8 @@ from PyQt5 import uic
 from PyQt5.QtCore import QDateTime
 # os.path
 import os.path as path
+# Data parser
+from bmt_read_file import BmtLogReader
 
 
 class AddSessionUi(QWidget):
@@ -36,8 +38,18 @@ class AddSessionUi(QWidget):
 
     def proc_save_cb(self):
         session_name = self.build_session_name()
-        # TODO Check if data file is selected.
-        # TODO Process Data.
+        # Check if data file is selected.
+        if not path.isfile(self.data_file.text()):
+            self.show_error( "Please select a valid data file.")
+        # TODO Get Setup from database.
+        setup_name = self.setup_list_widget.currentItem().text()
+        setup = self.Parent.db.get_setup(self.get_setup_id_by_name(setup_name))
+        if setup[0] is None:
+            self.show_error( setup[1])
+        # Process Data.
+        data_paths = BmtLogReader.process_data( self.data_file.text(), setup[0] )
+        print(data_paths)
+        
         # TODO Add data/filepaths to database.
 
     def select_data_cb(self):

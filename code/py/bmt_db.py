@@ -207,5 +207,96 @@ class BmtDb:
             return ( list(), f"Error reading sensor list: {db_err}")
         
         return ( rows, "" )
+    
+    def get_setup(self, setup_id):
+        """
+        Read the setup data of a specific id.
+        :param self: Pointer to object
+        :para setup_id: Database id of setup
+        :return: On Error: None, On Success: Tuple( bike_id, front_sensor_id, rear_sensor_id)
+        """
+        sql_get_setup = f"""SELECT setup_name, bike_id, fork_sensor_id, shock_sensor_id from setups 
+                        WHERE setup_id={setup_id}"""
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_get_setup)
+            rows = cursor.fetchone()
+        except Error as db_err:
+            return ( None, f"Error reading setup: {db_err}")
+
+        setup = BmtSetup()
+        setup.set_setup_id(setup_id)
+        setup.set_setup_name(rows[0])
+        # Get Bike object.
+        bike = self.get_bike(rows[1])
+        if bike[0] is None:
+            return (None, bike[1])
+        # Get Front sensor object.
+        front_sensor = self.get_sensor(rows[2])
+        if front_sensor[0] is None:
+            return (None, front_sensor[1])
+        # Get Rear sensor object.
+        rear_sensor = self.get_sensor(rows[3])
+        if rear_sensor[0] is None:
+            return (None, rear_sensor[1])
+        
+        setup.set_bike(bike[0])
+        setup.set_fork_sensor(front_sensor[0])
+        setup.set_shock_sensor(rear_sensor[0])
+        return ( setup, "" )
+
+    def get_bike(self, bike_id):
+        """
+        Read the bike data of a specific id.
+        :param self: Pointer to object
+        :para bike_id: Database id of setup
+        :return: On Error: None, On Success: BmtBike Object
+        """
+        sql_get_bike = f"""SELECT bike_name, travel_fork_mm, travel_shock_mm, travel_rear_mm, head_angle_degree, frame_linkage from bikes
+                        WHERE bike_id={bike_id}"""
+        
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_get_bike)
+            rows = cursor.fetchone()
+        except Error as db_err:
+            return ( None, f"Error reading bike: {db_err}")
+
+        bike = BmtBike()
+        bike.set_bike_name(rows[0])
+        bike.set_travel_fork_mm(rows[1])
+        bike.set_travel_shock_mm(rows[2])
+        bike.set_travel_rear_axle_mm(rows[3])
+        bike.set_head_angle(rows[4])
+        bike.set_frame_linkage(rows[5])
+
+        return ( bike, "" )
+
+    def get_sensor(self, sensor_id):
+        """
+        Read the setup data of a specific id.
+        :param self: Pointer to object
+        :para sensor_id: Database id of sensor
+        :return: On Error: None, On Success: BmtSensorCalibration Object
+        """
+        sql_get_sensor = f"""SELECT  sensor_name, adc_value_min, adc_value_max, range_mm, flipped FROM sensors
+                        WHERE sensor_id={sensor_id}"""
+        
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_get_sensor)
+            rows = cursor.fetchone()
+        except Error as db_err:
+            return ( None, f"Error reading sensor: {db_err}")
+
+        sensor = BmtSensorCalibration()
+        sensor.set_sensor_id(sensor_id)
+        sensor.set_sensor_name(rows[0])
+        sensor.set_adc_value_zero(rows[1])
+        sensor.set_adc_value_max(rows[2])
+        sensor.set_range_mm(rows[3])
+        sensor.set_flip_travel(bool(rows[4]))
+
+        return ( sensor, "" )
 
         
