@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>423</width>
+    <height>355</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Load old session</string>
+  </property>
+  <widget class="QListWidget" name="session_list">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>25</y>
+     <width>381</width>
+     <height>291</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>5</y>
+     <width>111</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Saved Sessions</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="show_session_bttn">
+   <property name="geometry">
+    <rect>
+     <x>15</x>
+     <y>320</y>
+     <width>191</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show selected Session</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -320,4 +320,39 @@ class BmtDb:
 
         return ( sensor, "" )
 
+    def get_session_list(self):
+        """
+        Read a session list from the database.
+        :param self: Pointer to object
+        :return: Tuple: (list(), err_msg)
+        """
+        sql_get_sessions = """SELECT session_id, session_name from sessions
+                             ORDER BY session_id;"""
+
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute( sql_get_sessions )
+            rows = cursor.fetchall()
+        except Error as db_err:
+            return ( list(), f"Error reading sensor list: {db_err}")
         
+        return ( rows, "" )
+
+    def get_session_data(self, session_id):
+        """
+        Read the session data of a specific id.
+        :param self: Pointer to object
+        :para session_id: Database id of session.
+        :return: On Error: None, On Success: Tuple( travel_csv_path, gps_csv_path)
+        """
+        sql_get_session_data = f"""SELECT  travel_data, gps_data FROM sessions
+                                WHERE session_id={session_id}"""
+        
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_get_session_data)
+            rows = cursor.fetchone()
+        except Error as db_err:
+            return ( None, f"Error reading sensor: {db_err}")
+        
+        return rows

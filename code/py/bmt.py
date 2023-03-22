@@ -6,6 +6,7 @@ from bmt_add_sensor import AddSensorUi
 from bmt_add_bike import AddBikeUi
 from bmt_add_setup import AddSetup
 from bmt_add_session import AddSessionUi
+from bmt_old_session import OldSessionUi
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -15,6 +16,7 @@ class Ui(QtWidgets.QMainWindow):
         self.add_bike_open = False
         self.create_setup_open = False
         self.add_session_open = False
+        self.old_session_open = False
 
         # Link Buttons to callback functions.
         self.addBike_bttn.clicked.connect(self.addBike_cb)
@@ -42,7 +44,10 @@ class Ui(QtWidgets.QMainWindow):
             self.AddSensor.show()
 
     def oldSession_cb(self):
-        print( "Load old Session.")
+        if not self.old_session_open:
+            self.old_session_open = True
+            self.OldSession = OldSessionUi(self)
+            self.OldSession.show()
 
     def newSession_cb(self):
         if not self.add_session_open:
@@ -67,32 +72,3 @@ def show_ui():
 
 if __name__ == '__main__':
     show_ui()
-    '''
-    fork_sensor_dummy = BmtSensorCalibration()
-    fork_sensor_dummy.set_sensor_name( "Fork Dummy")
-    fork_sensor_dummy.set_adc_value_zero( 25 ) 
-    fork_sensor_dummy.set_adc_value_max( 4095 )
-    fork_sensor_dummy.set_range_mm( 200 )
-    fork_sensor_dummy.set_flip_travel(True)
-
-    shock_sensor_dummy = BmtSensorCalibration()
-    shock_sensor_dummy.set_sensor_name( "Shock Dummy")
-    shock_sensor_dummy.set_adc_value_zero( 22 ) 
-    shock_sensor_dummy.set_adc_value_max( 4095 )
-    shock_sensor_dummy.set_range_mm( 75 )
-    shock_sensor_dummy.set_flip_travel(False)
-
-    dummy_bike = BmtBike()
-    dummy_bike.set_bike_name( "Kavenz VHP16 Fred")
-    dummy_bike.set_head_angle( 64.0 )
-    dummy_bike.set_travel_rear_mm(160)
-    dummy_bike.set_travel_fork_mm(170)
-    dummy_bike.set_travel_shock_mm(65)
-    dummy_bike.set_frame_linkage("/Users/n0ll4k/Documents/bmt_data/travel_data/Kavenz_VHP16.json")
-
-    db = BmtDb( r"test.db")
-    db.create_tables()
-    db.add_sensor( fork_sensor_dummy )
-    db.add_sensor( shock_sensor_dummy )
-    db.add_bike( dummy_bike )
-    '''
