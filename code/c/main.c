@@ -25,6 +25,7 @@
 #define BTN_WIFI            5
 #define INPUT_LEN           2
 #define STATE_LED_PIN       22
+#define DEBOUNCE_TIME_MS    25
 //---------------------------------------------------------------------------
 enum app_state_e {
     state_init = 0x00,
@@ -39,19 +40,15 @@ enum app_state_e {
 };
 
 queue_t core_queue;
-static const uint8_t debounce_time = 50;
-static bool buttton_pressed = false;
-static int32_t alarm_id = 0;
 enum app_state_e app_state = state_init;
-uint32_t input_array[INPUT_LEN] = {BTN_START_STOP, BTN_WIFI};
-static bool input_states[INPUT_LEN] = {0, 0};
+struct repeating_timer timer;
 static bool led_blink_state = false;
 const char *ap_name = "BahamaMamaTelemetry";
 const char *password = "GetDrunkOnBMT";
 //---------------------------------------------------------------------------
 void sd_handling_core1( void );
-void bttn_init( void );
-bool rep_timer_callback( struct repeating_timer *timer);
+void io_init( void );
+bool io_debounce_cb( struct repeating_timer *timer);
 bool debounce_start_bttn(void);
 bool debounce_wifi_bttn(void);
 void set_led_blink_state(bool state);
@@ -60,24 +57,22 @@ void set_led_blink_state(bool state);
 /* Core0 Handling. */
 int main() 
 {
-    struct repeating_timer timer;
-
+    /* StdIO Initialization. */
     stdio_init_all();
 
+    /* Initialize WiFi/BLE Chip */
     if (cyw43_arch_init()) {
         printf("failed to initialise\n");
         return 1;
     }
+    /* Start AP. */
     cyw43_arch_enable_ap_mode(ap_name, password, CYW43_AUTH_WPA2_AES_PSK);
 
-    gpio_init(STATE_LED_PIN);
-    gpio_set_dir( STATE_LED_PIN, GPIO_OUT );
+    /* Initialize status LED, buttons and debounce timer. */
+    io_init();
 
-    bttn_init();
-    add_repeating_timer_ms(-25, rep_timer_callback, NULL, &timer);
-
+    /* Initialize Inter-Core-Queue and start Core1 */
     queue_init( &core_queue, sizeof(queue_element_t), 1024 );
-
     multicore_launch_core1(sd_handling_core1);
 
     /* Initialize data collection. */
@@ -159,7 +154,7 @@ void sd_handling_core1(void)
 }
 
 //---------------------------------------------------------------------------
-bool rep_timer_callback( struct repeating_timer *timer)
+bool io_debounce_cb( struct repeating_timer *timer)
 {   
     static bool led_state = false;
     static uint32_t led_cnt = 20;
@@ -204,7 +199,7 @@ bool rep_timer_callback( struct repeating_timer *timer)
     return true;
 }
 
-void bttn_init( void )
+void io_init( void )
 {
     gpio_init(BTN_START_STOP);
     gpio_set_dir( BTN_START_STOP, GPIO_IN );
@@ -213,6 +208,11 @@ void bttn_init( void )
     gpio_init(BTN_WIFI);
     gpio_set_dir( BTN_WIFI, GPIO_IN) ;
     gpio_pull_up(BTN_WIFI);
+
+    gpio_init(STATE_LED_PIN);
+    gpio_set_dir( STATE_LED_PIN, GPIO_OUT );
+
+    add_repeating_timer_ms(-DEBOUNCE_TIME_MS, io_debounce_cb, NULL, &timer);
 }
 
 bool debounce_start_bttn(void)
