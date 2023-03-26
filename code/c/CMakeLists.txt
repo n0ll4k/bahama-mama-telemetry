@@ -1,14 +1,24 @@
 cmake_minimum_required(VERSION 3.13)
 
-include(pico_sdk_import.cmake)
+set(PICO_SDK_PATH "/Users/n0ll4k/Code/00_sdk/pico-sdk")
+set(PICO_EXTRAS_PATH "/Users/n0ll4k/Code/00_sdk/pico-extras")
 
+# Pull in SDK (must be before project)
+include(pico_sdk_import.cmake)
+# Pull in optional extras
+include(pico_extras_import_optional.cmake)
+
+# Set board
+set(PICO_BOARD pico_w)
+
+# Set project
 project(bahama_mama_telemetry C CXX ASM)
+
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-set(PICO_BOARD pico_w)
-
+# Initialize the SDK
 pico_sdk_init()
 
 add_executable(bmt
@@ -21,16 +31,22 @@ add_executable(bmt
     sd_if/sd_if.c
 )
 
+target_include_directories(bmt PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts
+        #${CMAKE_CURRENT_LIST_DIR}/dhcpserver
+        #${CMAKE_CURRENT_LIST_DIR}/dnsserver
+        )
 
 add_subdirectory(no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
 
 target_link_libraries(bmt
-        pico_stdlib             # for core functionality
-        pico_cyw43_arch_none    # we need Wifi to access the GPIO, but we don't need anything else
-        hardware_adc            # ADC to read potentiometers 
-        hardware_dma            # DMA to transfer data.
-        hardware_uart           # GPS Data
-        FatFs_SPI               # SD Card
+        pico_cyw43_arch_lwip_poll   # we need Wifi to access the GPIO, but we don't need anything else
+        pico_stdlib                 # for core functionality
+        hardware_adc                # ADC to read potentiometers 
+        hardware_dma                # DMA to transfer data.
+        hardware_uart               # GPS Data
+        FatFs_SPI                   # SD Card
         pico_multicore
     )
 pico_enable_stdio_usb(bmt 1)
