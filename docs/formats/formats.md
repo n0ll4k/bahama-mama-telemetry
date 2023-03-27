@@ -49,7 +49,26 @@ GPS Data is NMEA0813 formated and will be saved as it is read from the module.
 Python scripts for post processing and data evaluation will be provided. The goal is to have a graphical interface for download and evaluation of data.
 
 
+# WiFi/TCP Protocol
 
+Again the protocol will be designed having KISS in mind.
 
+The BMT system will be the TCP server as it contains the data. A PC (Or in the future a smartphone) will be the client to the server.
 
+To start with there will be two available commands from the client as shown in the table below, the commans will have a 16-Bit code:
 
+Byte Code   | Command Name 
+------------|-------------------------
+0x0000      | Reserved (NOP)
+0x0001      | Get last file
+0x0002      | Get older file
+
+As the main use case will be to retrieve the latest file from the system that will be the basic command. In addition a get older files command shall be implemented which everytime counts down and checks for an older file. If there is no older file an error/defined message will be returned.
+
+The filestream shall include the filename, length and actual data. The byte offsets are as shown in the following table:
+
+Byte Offset | Content
+------------|------------------------------------
+0           | Filename (Length always 13-Byte)
+13          | Data length in Byte (32-Bit value)
+17          | Start of actual data block
