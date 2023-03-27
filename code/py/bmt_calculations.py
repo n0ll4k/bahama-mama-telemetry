@@ -127,6 +127,14 @@ class BmtCalculations:
 
         # Calculate tick differences
         travel_df['tick_diff'] = travel_df['int_timestamp'].diff()
+        
+        # Calculate travel percentages
+        travel_df['front_percentage'] = travel_df.apply( lambda row: ((row.front_axle_mm/front_linear_max_mm)*100).round(1), axis=1)
+        travel_df['rear_percentage'] = travel_df.apply( lambda row: ((row.rear_axle_mm/setup.bike().travel_rear_axle_mm())*100).round(1) ,axis=1)
+        
+        return travel_df
+    
+    def calculate_travel_speeds( travel_df ):
         # Calculate front end speeds
         travel_df['front_diff_mm'] = travel_df['front_axle_mm'].diff().round(1)
         travel_df['front_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.front_diff_mm, row.tick_diff ), axis=1)
@@ -134,12 +142,8 @@ class BmtCalculations:
         travel_df['rear_diff_mm'] = travel_df['rear_axle_mm'].diff().round(1)
         travel_df['rear_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.rear_diff_mm, row.tick_diff ), axis=1)
 
-        # Calculate travel percentages
-        travel_df['front_percentage'] = travel_df.apply( lambda row: ((row.front_axle_mm/front_linear_max_mm)*100).round(1), axis=1)
-        travel_df['rear_percentage'] = travel_df.apply( lambda row: ((row.rear_axle_mm/setup.bike().travel_rear_axle_mm())*100).round(1) ,axis=1)
-        
-         
         return travel_df
+
 
 
 if __name__ == "__main__":

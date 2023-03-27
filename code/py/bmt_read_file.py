@@ -25,6 +25,7 @@ class BmtLogReader:
 
         BmtCalculations.transform_gps_data( gps_df )
         BmtCalculations.transform_travel_data( travel_df, setup )
+        BmtCalculations.calculate_travel_speeds( travel_df )
         
         try:
             base_filename = "{}-{}_{}_".format(os.path.basename(file_path[:-4]), 
