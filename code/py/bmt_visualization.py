@@ -63,7 +63,7 @@ class BmtVisualization:
         avg_travel = (travel_df[column].mean()).round(2)
         avg_txt = "Avg: {}mm".format(avg_travel)
 
-        hist, edges = np.histogram(travel_df[column], density=True )
+        hist, edges = np.histogram(travel_df[column], bins=20, density=True )
         hist_plot.quad( top=hist, 
                         bottom=0, 
                         left=edges[:-1], 
