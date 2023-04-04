@@ -31,7 +31,6 @@ class OldSessionUi(QWidget):
         self.close()
     
     def show_session(self):
-        print( "ShowSession")
         session_id = self.get_setup_id_by_name(self.session_list.currentItem().text())
         data_paths = self.Parent.db.get_session_data(session_id)
 
