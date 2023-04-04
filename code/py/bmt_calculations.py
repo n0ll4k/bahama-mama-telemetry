@@ -18,7 +18,7 @@ class BmtCalculationsAdc2Mm:
             mm_val = self._sensor_info.range_mm() - mm_val
         if( mm_val < 0 ):
             mm_val = 0.0
-        return round(mm_val, 1 )
+        return round(mm_val, 2 )
 
 class BmtLevRatioCalculations:
     def __init__( self, json_path ):
@@ -42,16 +42,16 @@ class BmtLevRatioCalculations:
             print( "No valid leverage ratio data file given.")
             return pd.DataFrame()
         
-        lev_df['rear_wheel_diff_mm'] = lev_df['rear_wheel_mm'].diff().round(2)
+        lev_df['rear_wheel_diff_mm'] = lev_df['rear_wheel_mm'].diff().round(4)
         lev_df.loc[0, 'shock_diff_mm'] = 0
         for i in range(1, len(lev_df)):
-            lev_df.loc[i, 'shock_diff_mm'] = (lev_df.loc[i, 'rear_wheel_diff_mm'] /lev_df.loc[i-1, 'leverage_ratio']).round(2)
+            lev_df.loc[i, 'shock_diff_mm'] = (lev_df.loc[i, 'rear_wheel_diff_mm'] /lev_df.loc[i-1, 'leverage_ratio']).round(4)
         lev_df.loc[0, 'calc_shock_mm'] = 0
         for i in range(1, len(lev_df)):
             lev_df.loc[i, 'calc_shock_mm'] = lev_df.loc[i-1, 'calc_shock_mm'] + lev_df.loc[i, 'shock_diff_mm']
         # Calulate offset for quicker calcultions afterwards
         for i in range( 0, len(lev_df)):
-            lev_df.loc[i, 'calc_offset'] = (lev_df.loc[i, 'rear_wheel_mm'] - ( lev_df.loc[i, 'leverage_ratio']*lev_df.loc[i, 'calc_shock_mm'])).round(2)
+            lev_df.loc[i, 'calc_offset'] = (lev_df.loc[i, 'rear_wheel_mm'] - ( lev_df.loc[i, 'leverage_ratio']*lev_df.loc[i, 'calc_shock_mm'])).round(4)
 
         return lev_df
     
@@ -61,7 +61,7 @@ class BmtLevRatioCalculations:
                 break
         if ( index > 0 ):
             index -= 1
-        rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(2)
+        rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(4)
 
         return rear_axle_mm
     
@@ -104,7 +104,7 @@ class BmtCalculations:
     @staticmethod
     def calc_front_travel( fork_mm, head_angle ):
         linear_travel = fork_mm * math.sin(head_angle)
-        return round( linear_travel, 1 )
+        return round( linear_travel, 3 )
     
     @staticmethod
     def calc_travel_speed_mm_s( travel_diff_mm, time_diff_ms ):
@@ -136,10 +136,10 @@ class BmtCalculations:
     
     def calculate_travel_speeds( travel_df ):
         # Calculate front end speeds
-        travel_df['front_diff_mm'] = travel_df['front_axle_mm'].diff().round(1)
+        travel_df['front_diff_mm'] = travel_df['front_axle_mm'].diff().round(4)
         travel_df['front_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.front_diff_mm, row.tick_diff ), axis=1)
         # Calculate read end speeds
-        travel_df['rear_diff_mm'] = travel_df['rear_axle_mm'].diff().round(1)
+        travel_df['rear_diff_mm'] = travel_df['rear_axle_mm'].diff().round(4)
         travel_df['rear_speeds_mm_s'] = travel_df.apply( lambda row: BmtCalculations.calc_travel_speed_mm_s( row.rear_diff_mm, row.tick_diff ), axis=1)
 
         return travel_df
