@@ -61,7 +61,9 @@ class BmtVisualization:
             return hist_plot        
         
         avg_travel = (travel_df[column].mean()).round(2)
-        avg_txt = "Avg: {}mm".format(avg_travel)
+        avg_txt = f"Avg: {avg_travel}mm"
+        max_travel = (travel_df[column].max()).round(2)
+        max_txt = f"Max: {max_travel}mm"
 
         hist, edges = np.histogram(travel_df[column], bins=20, density=True )
         hist_plot.quad( top=hist, 
@@ -71,11 +73,15 @@ class BmtVisualization:
                         fill_color=color,
                         line_color='gainsboro' )
         span_avg = Span(location=avg_travel, dimension='height', line_color='grey', line_dash='dashed', line_width=1)
+        span_max = Span(location=max_travel, dimension='height', line_color='grey', line_dash='dashed', line_width=1)
 
-        l_heigth = hist.max() - ( 0.05 * hist.max())
-        l_avg = Label(x=avg_travel, x_offset=5, y=l_heigth, text=avg_txt, text_color='grey', text_font_size='14px' )
+        l_height = hist.max() - ( 0.05 * hist.max())
+        l_avg = Label(x=avg_travel, x_offset=5, y=l_height, text=avg_txt, text_color='grey', text_font_size='14px' )
+        l_max = Label(x=max_travel, x_offset=-105, y=l_height, text=max_txt, text_color='grey', text_font_size='14px' )
         hist_plot.add_layout(span_avg)
+        hist_plot.add_layout(span_max)
         hist_plot.add_layout(l_avg)
+        hist_plot.add_layout(l_max)
         hist_plot.y_range.start = 0
         hist_plot.xaxis.axis_label = "Travel"
         hist_plot.title = "{} Histogram".format(name)
