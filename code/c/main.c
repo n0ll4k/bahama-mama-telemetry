@@ -9,8 +9,8 @@
 //---------------------------------------------------------------------------
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
 #include "pico/util/queue.h"
 #include "pico/multicore.h"
 #include "hardware/gpio.h"
@@ -43,8 +43,6 @@ queue_t core_queue;
 enum app_state_e app_state = state_init;
 struct repeating_timer timer;
 static bool led_blink_state = false;
-const char *ap_name = "BahamaMamaTelemetry";
-const char *password = "GetDrunkOnBMT";
 //---------------------------------------------------------------------------
 void sd_handling_core1( void );
 void io_init( void );
@@ -59,14 +57,6 @@ int main()
 {
     /* StdIO Initialization. */
     stdio_init_all();
-
-    /* Initialize WiFi/BLE Chip */
-    if (cyw43_arch_init()) {
-        printf("failed to initialise\n");
-        return 1;
-    }
-    /* Start AP. */
-    cyw43_arch_enable_ap_mode(ap_name, password, CYW43_AUTH_WPA2_AES_PSK);
 
     /* Initialize status LED, buttons and debounce timer. */
     io_init();
@@ -154,6 +144,7 @@ void sd_handling_core1(void)
 }
 
 //---------------------------------------------------------------------------
+
 bool io_debounce_cb( struct repeating_timer *timer)
 {   
     static bool led_state = false;

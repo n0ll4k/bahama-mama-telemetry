@@ -29,21 +29,16 @@ add_executable(bmt
     adc_collector/adc_collector.c
     data_collector/data_collector.c
     sd_if/sd_if.c
-    dhcpserver/dhcpserver.c
-    dnsserver/dnsserver.c
 )
 
 target_include_directories(bmt PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts
-        ${CMAKE_CURRENT_LIST_DIR}/dhcpserver
-        ${CMAKE_CURRENT_LIST_DIR}/dnsserver
+        ${CMAKE_CURRENT_LIST_DIR}/..
         )
 
 add_subdirectory(no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
 
 target_link_libraries(bmt
-        pico_cyw43_arch_lwip_poll   # we need Wifi to access the GPIO, but we don't need anything else
         pico_stdlib                 # for core functionality
         hardware_adc                # ADC to read potentiometers 
         hardware_dma                # DMA to transfer data.
