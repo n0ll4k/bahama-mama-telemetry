@@ -104,6 +104,6 @@ if __name__ == "__main__":
     parser.add_argument( "-j", "--json", dest="json_file", action="store", required=True, help="Path to json leverage ration file" )
     args = parser.parse_args()
     
-    shock_calc = BmtLevRatioCalculations(args.json_file)
+    shock_calc = LevRatio(args.json_file)
     print( shock_calc.get_leverage_dataframe())
     print( shock_calc.shock_mm_to_rear_travel_mm( 20 ) )
