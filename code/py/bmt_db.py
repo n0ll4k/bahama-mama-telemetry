@@ -356,3 +356,24 @@ class BmtDb:
             return ( None, f"Error reading sensor: {db_err}")
         
         return rows
+    
+    def get_session_leverage(self, session_id):
+        """
+        Grab the leverage curve for the session id.
+        :param self: Pointer to object
+        :para session_id: Database id of session.
+        :return: On Error: None, On Success: leverage ratio path
+        """
+        sql_get_lev_file = f"""SELECT bikes.frame_linkage FROM sessions
+                            INNER JOIN setups ON sessions.setup_id=setups.setup_id
+                            INNER JOIN bikes ON setups.bike_id=bikes.bike_id
+                            WHERE session_id={session_id}"""
+        
+        try:
+            cursor = self.__db_conn.cursor()
+            cursor.execute(sql_get_lev_file)
+            row = cursor.fetchone()
+        except Error as db_err:
+            return ( None, f"Error reading sensor: {db_err}")
+        
+        return row[0]

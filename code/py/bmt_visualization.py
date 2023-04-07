@@ -6,7 +6,6 @@ from bokeh.io import curdoc
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, Slope
 from bokeh.models.annotations import Label, Span
-from bmt_calculations import BmtCalculations
 
 class BmtVisualization:
     MAP_DIFF = 500
@@ -32,11 +31,11 @@ class BmtVisualization:
             print( "Error reading data file: {}".format(gps_info_path) )
 
         return gps_df
-    
+     
     @staticmethod
     def create_travel_plot( travel_df ):
         travel_source = ColumnDataSource(travel_df)
-        travel_plot = figure(title="Plot responsive sizing example",
+        travel_plot = figure(title="Travel plot",
                       width=BmtVisualization.DOUBLE_PLOT_WIDTH,
                       height=BmtVisualization.PLOT_HEIGHT,
                       x_axis_label="Timestamp",
@@ -180,11 +179,21 @@ class BmtVisualization:
         reb_plot.add_layout(rear_reb_reg_line)
 
         return comp_plot, reb_plot
+    
+    @staticmethod
+    def show_leverage_curve( leverage_df ):
+        leverage_source = ColumnDataSource(leverage_df)
+        leverage_plot = figure(title="Leverage Ratio",
+                      height=(BmtVisualization.PLOT_HEIGHT*2),
+                      x_axis_label="Rear Wheel mm",
+                      y_axis_label="Leverage Ratio",)
+        leverage_plot.line( x='rear_wheel_mm', y='leverage_ratio', source=leverage_source, color='steelblue', line_width=2)
+        return leverage_plot
 
                         
 
     @staticmethod
-    def present_data( travel_df, gps_df, export ):
+    def present_data( travel_df, gps_df, leverage_df, export ):
         curdoc().theme = "dark_minimal"
 
         output_file(filename=export, title="Bahama Mama Telemetrie")    
@@ -198,11 +207,17 @@ class BmtVisualization:
         front_speeds = BmtVisualization.create_velocity_histogram( travel_df, "fork")
         rear_speeds = BmtVisualization.create_velocity_histogram( travel_df, "shock")
 
+        if leverage_df is not None:
+            lev_graph = BmtVisualization.show_leverage_curve(leverage_df)
+            graph_column = column( map, lev_graph)
+        else:
+            graph_column = column( map )
+
         histogram_row = row( fork_hist, shock_hist)
         velocity_row = row( comp_vel, reb_vel)
         velocity_hist_row = row( front_speeds, rear_speeds )
         data_column = column( travel_plot, histogram_row, velocity_row, velocity_hist_row )
-        layout = row( data_column, map, sizing_mode="stretch_both")
+        layout = row( data_column, graph_column, sizing_mode="stretch_both")
     
         show(layout)
     

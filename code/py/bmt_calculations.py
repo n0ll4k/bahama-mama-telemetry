@@ -1,7 +1,7 @@
 import math
 import pandas as pd
-import json
 from pyproj import Transformer
+from leverage import LevRatio
 from bmt_formats import BmtSetup, BmtBike, BmtSensorCalibration
 
 lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
@@ -19,54 +19,6 @@ class BmtCalculationsAdc2Mm:
         if( mm_val < 0 ):
             mm_val = 0.0
         return round(mm_val, 2 )
-
-class BmtLevRatioCalculations:
-    def __init__( self, json_path ):
-        self._leverage_df = self._json_lev_to_travel_data( json_path )
-    
-    def _read_json( self, json_file ):
-        try:
-            with open( json_file ) as json_data:
-                data = json.load( json_data )
-        except:
-            print( "Error reading: {}".format( json_file ) )
-            return None
-        
-        return data
-
-    def _json_lev_to_travel_data( self, json_path ):
-        json_data = self._read_json( json_path )
-        try:
-            lev_df = pd.DataFrame(json_data['leverage_ratio_curve'])
-        except KeyError:
-            print( "No valid leverage ratio data file given.")
-            return pd.DataFrame()
-        
-        lev_df['rear_wheel_diff_mm'] = lev_df['rear_wheel_mm'].diff().round(4)
-        lev_df.loc[0, 'shock_diff_mm'] = 0
-        for i in range(1, len(lev_df)):
-            lev_df.loc[i, 'shock_diff_mm'] = (lev_df.loc[i, 'rear_wheel_diff_mm'] /lev_df.loc[i-1, 'leverage_ratio']).round(4)
-        lev_df.loc[0, 'calc_shock_mm'] = 0
-        for i in range(1, len(lev_df)):
-            lev_df.loc[i, 'calc_shock_mm'] = lev_df.loc[i-1, 'calc_shock_mm'] + lev_df.loc[i, 'shock_diff_mm']
-        # Calulate offset for quicker calcultions afterwards
-        for i in range( 0, len(lev_df)):
-            lev_df.loc[i, 'calc_offset'] = (lev_df.loc[i, 'rear_wheel_mm'] - ( lev_df.loc[i, 'leverage_ratio']*lev_df.loc[i, 'calc_shock_mm'])).round(4)
-
-        return lev_df
-    
-    def shock_mm_to_rear_travel_mm( self, shock_mm : float ):
-        for index in range( 0, len(self._leverage_df)):
-            if self._leverage_df.loc[index, 'calc_shock_mm'] > shock_mm:
-                break
-        if ( index > 0 ):
-            index -= 1
-        rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(4)
-
-        return rear_axle_mm
-    
-    def get_leverage_dataframe( self ):
-        return self._leverage_df
 
 class BmtCalculations:
     @staticmethod
@@ -115,7 +67,7 @@ class BmtCalculations:
         # Tranform ADC values to mm.
         fork_calculator = BmtCalculationsAdc2Mm( setup.fork_sensor() )
         shock_calculator = BmtCalculationsAdc2Mm( setup.shock_sensor() )
-        rear_axle_calculator = BmtLevRatioCalculations( setup.bike().frame_linkage())
+        rear_axle_calculator = LevRatio( setup.bike().frame_linkage())
         front_linear_max_mm = setup.bike().travel_fork_mm() * math.sin(setup.bike().head_angle())
 
         travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
@@ -155,7 +107,3 @@ if __name__ == "__main__":
     shock_calc = BmtLevRatioCalculations(args.json_file)
     print( shock_calc.get_leverage_dataframe())
     print( shock_calc.shock_mm_to_rear_travel_mm( 20 ) )
-
-    
-    
-

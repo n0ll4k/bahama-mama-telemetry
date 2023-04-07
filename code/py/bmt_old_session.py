@@ -6,6 +6,8 @@ from PyQt5 import uic
 import os.path as path
 # Visualization
 from bmt_visualization import BmtVisualization
+# Leverage Ratio
+from leverage import LevRatio
 
 class OldSessionUi(QWidget):
     def __init__(self, parent):
@@ -31,19 +33,23 @@ class OldSessionUi(QWidget):
         self.close()
     
     def show_session(self):
-        session_id = self.get_setup_id_by_name(self.session_list.currentItem().text())
+        session_id = self.get_session_id_by_name(self.session_list.currentItem().text())
         data_paths = self.Parent.db.get_session_data(session_id)
+        lev_obj = LevRatio(self.Parent.db.get_session_leverage(session_id))
 
+        lev_df = lev_obj.get_leverage_dataframe()
         travel_df = BmtVisualization.open_travel_information( data_paths[0] )
         gps_df = BmtVisualization.open_gps_information( data_paths[1])
 
         export_file = "{}.html".format( path.basename(data_paths[1])[:-7])
         export = path.abspath( path.join(path.dirname(data_paths[1]), export_file ))
 
-        BmtVisualization.present_data( travel_df, gps_df, export )
+        BmtVisualization.present_data( travel_df, gps_df, lev_df, export )
+
+        
         self.close()
 
-    def get_setup_id_by_name(self, name):
+    def get_session_id_by_name(self, name):
         for item in self.sessions:
             if item[1] == name:
                 return item[0]
