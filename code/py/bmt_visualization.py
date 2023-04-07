@@ -10,6 +10,9 @@ from bmt_calculations import BmtCalculations
 
 class BmtVisualization:
     MAP_DIFF = 500
+    SINGLE_PLOT_WIDTH=650
+    DOUBLE_PLOT_WIDTH=2*SINGLE_PLOT_WIDTH
+    PLOT_HEIGHT=350
     @staticmethod
     def open_travel_information( travel_info_path ):
         travel_df = pd.DataFrame()
@@ -34,8 +37,8 @@ class BmtVisualization:
     def create_travel_plot( travel_df ):
         travel_source = ColumnDataSource(travel_df)
         travel_plot = figure(title="Plot responsive sizing example",
-                      width=1000,
-                      height=350,
+                      width=BmtVisualization.DOUBLE_PLOT_WIDTH,
+                      height=BmtVisualization.PLOT_HEIGHT,
                       x_axis_label="Timestamp",
                       y_axis_label="Travel",)
         travel_plot.line( x='int_timestamp', y='front_axle_mm', source=travel_source, legend_label='front', color='steelblue', line_width=2)
@@ -44,8 +47,8 @@ class BmtVisualization:
     
     @staticmethod 
     def create_travel_histograms( travel_df, damper ):
-        hist_plot = figure( width=500, 
-                            height=350, 
+        hist_plot = figure( width=BmtVisualization.SINGLE_PLOT_WIDTH, 
+                            height=BmtVisualization.PLOT_HEIGHT, 
                             toolbar_location=None )
         if damper == "fork":
             column = "front_axle_mm"
@@ -89,6 +92,39 @@ class BmtVisualization:
         return hist_plot
     
     @staticmethod
+    def create_velocity_histogram( travel_df: pd.DataFrame, suspension_type ) -> figure:
+        vel_histogram = figure ( width=BmtVisualization.SINGLE_PLOT_WIDTH,
+                                height=BmtVisualization.PLOT_HEIGHT, )
+
+        if suspension_type == 'fork':
+            speeds = "front_speeds_mm_s"
+            name = "Front Axle Speeds"
+            color="steelblue"
+        elif suspension_type == 'shock':
+            speeds = "rear_speeds_mm_s"
+            name = "Rear Axle Speeds"
+            color="green"
+        else:
+            speeds = ""
+            color=""
+            return vel_histogram
+
+        
+        hist, edges = np.histogram( travel_df[speeds][1:], bins=40, density=True )
+
+        vel_histogram.quad( top=hist, 
+                            bottom=0, 
+                            left=edges[:-1], 
+                            right=edges[1:], 
+                            fill_color=color,
+                            line_color='gainsboro' )
+        vel_histogram.y_range.start = 0
+        vel_histogram.xaxis.axis_label = "Speeds"
+        vel_histogram.title = "{} Histogram".format(name)
+
+        return vel_histogram
+    
+    @staticmethod
     def create_velocity_balance( travel_df ):
         # Grab specific data from travel date frame
         front_comp_df = travel_df[travel_df['front_speeds_mm_s'] >= 0]
@@ -122,12 +158,12 @@ class BmtVisualization:
         
         # Create figures
         comp_plot = figure( title='Compression velocity balance',
-                            width=500, 
-                            height=350, 
+                            width=BmtVisualization.SINGLE_PLOT_WIDTH, 
+                            height=BmtVisualization.PLOT_HEIGHT, 
                             toolbar_location=None )
         reb_plot = figure( title='Rebound velocity balance',
-                           width=500, 
-                           height=350, 
+                           width=BmtVisualization.SINGLE_PLOT_WIDTH, 
+                           height=BmtVisualization.PLOT_HEIGHT, 
                            toolbar_location=None )
         reb_plot.y_range.flipped = True
 
@@ -159,9 +195,13 @@ class BmtVisualization:
         map = BmtVisualization.create_map( gps_df )
         comp_vel, reb_vel = BmtVisualization.create_velocity_balance( travel_df )
 
+        front_speeds = BmtVisualization.create_velocity_histogram( travel_df, "fork")
+        rear_speeds = BmtVisualization.create_velocity_histogram( travel_df, "shock")
+
         histogram_row = row( fork_hist, shock_hist)
         velocity_row = row( comp_vel, reb_vel)
-        data_column = column( travel_plot, histogram_row, velocity_row)
+        velocity_hist_row = row( front_speeds, rear_speeds )
+        data_column = column( travel_plot, histogram_row, velocity_row, velocity_hist_row )
         layout = row( data_column, map, sizing_mode="stretch_both")
     
         show(layout)
