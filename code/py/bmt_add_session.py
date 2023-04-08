@@ -10,6 +10,8 @@ import os.path as path
 from bmt_read_file import BmtLogReader
 # Visualization
 from bmt_visualization import BmtVisualization
+# Leverage Ratio
+from leverage import LevRatio
 
 
 class AddSessionUi(QWidget):
@@ -64,11 +66,13 @@ class AddSessionUi(QWidget):
         else:
             travel_df = BmtVisualization.open_travel_information( data_paths[0] )
             gps_df = BmtVisualization.open_gps_information( data_paths[1])
-    
+            lev_obj = LevRatio(setup[0].bike().frame_linkage())
+
+            lev_df = lev_obj.get_leverage_dataframe()    
             export_file = "{}.html".format( path.basename(data_paths[1])[:-7])
             export = path.abspath( path.join(path.dirname(data_paths[1]), export_file ))
 
-            BmtVisualization.present_data( travel_df, gps_df, export )
+            BmtVisualization.present_data( travel_df, gps_df, lev_df, export )
             self.close()
             
 
