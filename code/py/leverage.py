@@ -2,10 +2,13 @@
 import json
 # Pandas (mainly DataFrame)
 import pandas as pd
+# NumPy Polynomial
+from numpy.polynomial import Polynomial
 
 class LevRatio:
     def __init__( self, json_path ):
         self._leverage_df = self._json_lev_to_travel_data( json_path )
+        self._travel_polynom = Polynomial.fit(x=self._leverage_df['calc_shock_mm'], y=self._leverage_df['rear_wheel_mm'], deg=5)
     
     def _read_json( self, json_file ):
         try:
@@ -39,12 +42,7 @@ class LevRatio:
         return lev_df
     
     def shock_mm_to_rear_travel_mm( self, shock_mm : float ):
-        for index in range( 0, len(self._leverage_df)):
-            if self._leverage_df.loc[index, 'calc_shock_mm'] > shock_mm:
-                break
-        if ( index > 0 ):
-            index -= 1
-        rear_axle_mm = ( (shock_mm * self._leverage_df.loc[index, 'leverage_ratio']) + self._leverage_df.loc[index, 'calc_offset'] ).round(4)
+        rear_axle_mm = self._travel_polynom(shock_mm).round(4)
 
         return rear_axle_mm
     

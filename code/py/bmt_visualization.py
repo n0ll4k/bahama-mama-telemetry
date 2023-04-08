@@ -184,11 +184,21 @@ class BmtVisualization:
     def show_leverage_curve( leverage_df ):
         leverage_source = ColumnDataSource(leverage_df)
         leverage_plot = figure(title="Leverage Ratio",
-                      height=(BmtVisualization.PLOT_HEIGHT*2),
+                      height=(BmtVisualization.PLOT_HEIGHT),
                       x_axis_label="Rear Wheel mm",
                       y_axis_label="Leverage Ratio",)
         leverage_plot.line( x='rear_wheel_mm', y='leverage_ratio', source=leverage_source, color='steelblue', line_width=2)
         return leverage_plot
+
+    @staticmethod
+    def show_travel_curve( leverage_df ):
+        travel_source = ColumnDataSource(leverage_df)
+        travel_plot = figure(title="Leverage Ratio",
+                      height=(BmtVisualization.PLOT_HEIGHT),
+                      x_axis_label="Rear Wheel mm",
+                      y_axis_label="Shock mm",)
+        travel_plot.line( x='rear_wheel_mm', y='calc_shock_mm', source=travel_source, color='steelblue', line_width=2)
+        return travel_plot
 
                         
 
@@ -209,7 +219,8 @@ class BmtVisualization:
 
         if leverage_df is not None:
             lev_graph = BmtVisualization.show_leverage_curve(leverage_df)
-            graph_column = column( map, lev_graph)
+            travel_graph = BmtVisualization.show_travel_curve(leverage_df)
+            graph_column = column( map, lev_graph, travel_graph )
         else:
             graph_column = column( map )
 
