@@ -55,7 +55,7 @@ class BmtCalculations:
     
     @staticmethod
     def calc_front_travel( fork_mm, head_angle ):
-        linear_travel = fork_mm * math.sin(head_angle)
+        linear_travel = fork_mm * math.sin(math.radians(head_angle))
         return round( linear_travel, 3 )
     
     @staticmethod
@@ -68,7 +68,7 @@ class BmtCalculations:
         fork_calculator = BmtCalculationsAdc2Mm( setup.fork_sensor() )
         shock_calculator = BmtCalculationsAdc2Mm( setup.shock_sensor() )
         rear_axle_calculator = LevRatio( setup.bike().frame_linkage())
-        front_linear_max_mm = setup.bike().travel_fork_mm() * math.sin(setup.bike().head_angle())
+        front_linear_max_mm = setup.bike().travel_fork_mm() * math.sin(math.radians(setup.bike().head_angle()))
 
         travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
         travel_df['shock_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc), axis=1)
