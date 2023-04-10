@@ -48,3 +48,10 @@ class LevRatio:
     
     def get_leverage_dataframe( self ):
         return self._leverage_df
+
+    def rear_travel_mm_to_shock_mm( self, rear_axle_mm: float ) -> float:
+        poly_roots = (self._travel_polynom - rear_axle_mm).roots()
+
+        for item in poly_roots:
+            if item.imag == 0.0:
+                return float(item.real)
