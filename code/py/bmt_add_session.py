@@ -79,6 +79,7 @@ class AddSessionUi(QWidget):
     def select_data_cb(self):
         filename = QFileDialog.getOpenFileName(self,
                                                "Open raw data file.", 
+                                               None,
                                                "Log Files (*.log)")
         if not path.isfile(filename[0]):
             self.show_error("Please select a valid file.")

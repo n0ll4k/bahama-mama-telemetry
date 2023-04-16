@@ -59,7 +59,8 @@ class AddBikeUi(QWidget):
     
     def load_bike_json_cb(self):
         filename = QFileDialog.getOpenFileName(self,
-                                               "Open Bike JSON File", 
+                                               "Open Bike JSON File",
+                                               None,
                                                "JSON Files (*.json)")
         bike_data = self.load_json_file( filename[0])
         if bike_data is not None:
@@ -76,6 +77,7 @@ class AddBikeUi(QWidget):
     def load_bike_linkage_cb(self):
         filename = QFileDialog.getOpenFileName(self,
                                                "Open Linkage JSON File", 
+                                               None,
                                                "JSON Files (*.json)")
         try:
             # Load file just for verification
