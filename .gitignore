@@ -56,3 +56,6 @@ dkms.conf
 
 # VSCode folder
 .vscode
+
+# cmake extension build folder
+build
