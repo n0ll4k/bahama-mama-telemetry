@@ -40,8 +40,9 @@ class BmtVisualization:
                       height=BmtVisualization.PLOT_HEIGHT,
                       x_axis_label="Timestamp",
                       y_axis_label="Travel",)
-        travel_plot.line( x='int_timestamp', y='front_axle_mm', source=travel_source, legend_label='front', color='steelblue', line_width=2)
-        travel_plot.line( x='int_timestamp', y='rear_axle_mm', source=travel_source, legend_label='rear', color='green', line_width=2)
+        travel_plot.line( x='int_timestamp', y='front_axle_filter_mm', source=travel_source, legend_label='Front axle filtered', color='steelblue', line_width=2)
+        travel_plot.line( x='int_timestamp', y='rear_axle_filter_mm', source=travel_source, legend_label='Rear Axle filtered', color='green', line_width=2)
+
         return travel_plot
     
     @staticmethod 
