@@ -6,7 +6,6 @@ import json
 import bmt_formats as bmt_fmt
 import pandas as pd
 from bmt_calculations import BmtCalculations
-from scipy import signal
 
 
 
@@ -114,11 +113,7 @@ class BmtLogReader:
             travel_info_dict['shock_adc'] = travel_information[1]
             timestamp += 1
             travel_information_list.append(travel_info_dict)
-        
-        # Create filtered adc_values
-        travel_info_dict['fork_adc_filter'] = signal.savgol_filter(travel_info_dict['fork_adc'], window_length=11, polyorder=3, mode="nearest")
-        travel_info_dict['shock_adc_filter'] = signal.savgol_filter(travel_info_dict['shock_adc'], window_length=11, polyorder=3, mode="nearest")        
-        
+
         return travel_information_list
 
     @staticmethod

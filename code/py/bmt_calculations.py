@@ -3,6 +3,7 @@ import pandas as pd
 from pyproj import Transformer
 from leverage import LevRatio
 from bmt_formats import BmtSetup, BmtBike, BmtSensorCalibration
+from scipy import signal
 
 lonlat_to_webmercator = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
@@ -70,12 +71,22 @@ class BmtCalculations:
         rear_axle_calculator = LevRatio( setup.bike().frame_linkage())
         front_linear_max_mm = setup.bike().travel_fork_mm() * math.sin(math.radians(setup.bike().head_angle()))
 
+        # Create filtered adc_values
+        travel_df['fork_adc_filter'] = travel_df.apply(lambda row: signal.savgol_filter(row.fork_adc ,window_length=11,polyorder=3, mode="nearest"), axis=1)
+        travel_df['shock_adc_filter'] = travel_df.apply(lambda row: signal.savgol_filter(row.shock_adc ,window_length=11,polyorder=3, mode="nearest"), axis=1)
+
         travel_df['fork_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc), axis=1)
         travel_df['shock_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc), axis=1)
+
+        travel_df['fork_filter_mm'] = travel_df.apply( lambda row: fork_calculator.adc2mm(row.fork_adc_filter), axis=1)
+        travel_df['shock_filter_mm'] = travel_df.apply( lambda row: shock_calculator.adc2mm(row.shock_adc_filter), axis=1)
 
         # Calculate linear front end travel
         travel_df['front_axle_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
         travel_df['rear_axle_mm'] = travel_df.apply( lambda row: rear_axle_calculator.shock_mm_to_rear_travel_mm(row.shock_mm), axis=1 )
+
+        travel_df['front_axle_filter_mm'] = travel_df.apply( lambda row: BmtCalculations.calc_front_travel( row.fork_mm, setup.bike().head_angle() ), axis=1)
+        travel_df['rear_axle_filter_mm'] = travel_df.apply( lambda row: rear_axle_calculator.shock_mm_to_rear_travel_mm(row.shock_mm), axis=1 )
 
         # Calculate tick differences
         travel_df['tick_diff'] = travel_df['int_timestamp'].diff()
