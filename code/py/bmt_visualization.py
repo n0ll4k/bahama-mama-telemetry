@@ -16,7 +16,7 @@ class BmtVisualization:
     def open_travel_information( travel_info_path ):
         travel_df = pd.DataFrame()
         try:
-            travel_df = pd.read_csv( travel_info_path, index_col=0 )
+            travel_df = pd.read_csv( travel_info_path, index_col=0, sep=',', decimal='.' )
         except:
             print( "Error reading data file: {}".format(travel_info_path) )
 
@@ -26,7 +26,7 @@ class BmtVisualization:
     def open_gps_information( gps_info_path ):
         gps_df = pd.DataFrame()
         try:
-            gps_df = pd.read_csv( gps_info_path, index_col=0 )
+            gps_df = pd.read_csv( gps_info_path, index_col=0, sep=',', decimal='.' )
         except:
             print( "Error reading data file: {}".format(gps_info_path) )
 
@@ -271,9 +271,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     travel_df = BmtVisualization.open_travel_information( args.travel_file )
+    print( travel_df['front_diff_mm'].max() )
+    print( travel_df['front_speeds_mm_s'].max() )
     gps_df = BmtVisualization.open_gps_information( args.gps_file )
     
     export_file = "{}.html".format( os.path.basename(args.gps_file)[:-7])
     export = os.path.abspath( os.path.join(os.path.dirname(args.gps_file), export_file ))
 
-    BmtVisualization.present_data( travel_df, gps_df, export )
+    BmtVisualization.present_data( travel_df, gps_df, None, export )
