@@ -36,11 +36,17 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="SAG Calculations")
     parser.add_argument( "-j", "--json", dest="json_file", action="store", required=True, help="Path to json leverage ration file" )
-    parser.add_argument( "-p", "--percent", dest="sag_in_pc", type=float, action="store", required=True, help="SAG in PC")
+    parser.add_argument( "-p", "--percent", dest="sag_in_pc", type=float, action="store", help="SAG in PC")
     args = parser.parse_args()
 
     sag_calc = SagCalculator(args.json_file)
-    sag_data = sag_calc.calc_mm_from_sag( args.sag_in_pc )
 
-    print( f"Fork SAG: {sag_data[0]}mm")
-    print( f"Shock SAG: {sag_data[1]}mm")
+    if args.sag_in_pc:    
+        sag_data = sag_calc.calc_mm_from_sag( args.sag_in_pc )
+
+        print( f"Fork SAG: {sag_data[0]}mm")
+        print( f"Shock SAG: {sag_data[1]}mm")
+    else:
+        for sag in range(20,31,1):
+            sag_data = sag_calc.calc_mm_from_sag(sag)
+            print(f"SAG: {sag}%\tFork: {sag_data[0]}mm\tShock: {sag_data[1]}mm")
