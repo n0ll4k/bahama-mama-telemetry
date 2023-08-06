@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import xyzservices.providers as xyz
-from bokeh.layouts import row, column, layout, grid
+from bokeh.layouts import row, column
 from bokeh.io import curdoc
 from bokeh.plotting import figure, show, output_file
-from bokeh.models import ColumnDataSource, Slope
+from bokeh.models import ColumnDataSource, Slope, TabPanel, Tabs
 from bokeh.models.annotations import Label, Span
 
 class BmtVisualization:
@@ -221,15 +221,22 @@ class BmtVisualization:
         if leverage_df is not None:
             lev_graph = BmtVisualization.show_leverage_curve(leverage_df)
             travel_graph = BmtVisualization.show_travel_curve(leverage_df)
-            graph_column = column( map, lev_graph, travel_graph )
+            travel_column = column(lev_graph, travel_graph)
+            graph_column = row( map, travel_column )
         else:
-            graph_column = column( map )
+            graph_column = row( map )
 
-        histogram_row = row( fork_hist, shock_hist)
-        velocity_row = row( comp_vel, reb_vel)
-        velocity_hist_row = row( front_speeds, rear_speeds )
-        data_column = column( travel_plot, histogram_row, velocity_row, velocity_hist_row )
-        layout = row( data_column, graph_column, sizing_mode="stretch_both")
+        # Create panels
+        histogram_panel = TabPanel(child=row( fork_hist, shock_hist), title='Histograms')
+        velocity_panel = TabPanel(child=row( comp_vel, reb_vel), title='Velocities')
+        speed_panel = TabPanel(child=row( front_speeds, rear_speeds ), title='Axle Speeds')
+
+        # Create Tabbed field
+        tabs = Tabs(tabs=[histogram_panel, velocity_panel, speed_panel])
+
+        # Create layout
+        layout = column( travel_plot, tabs, graph_column )
+
     
         show(layout)
     
